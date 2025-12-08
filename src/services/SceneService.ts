@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {OrthographicCamera, Vector3} from 'three';
+import {type Camera, OrthographicCamera, PerspectiveCamera, Vector3} from 'three';
 import {DrawService} from "./DrawService.ts";
 import type {IGeometry} from "../types/model/IGeometry.ts";
 import {ModelViewer} from "../types/controls/ModelViewer.ts";
@@ -10,7 +10,7 @@ import {RenderService} from './RenderService.ts';
 export class SceneService {
     public readonly drawService: DrawService;
     readonly mainScene: THREE.Scene;
-    readonly mainCamera: OrthographicCamera;
+    mainCamera!: Camera;
     readonly uiScene: THREE.Scene;
     readonly uiCamera: OrthographicCamera;
 
@@ -21,13 +21,19 @@ export class SceneService {
     width: number = 0;
     height: number = 0;
     geometryView: GeometryView | null = null;
+    private isMainPerspective: boolean = true;
+    private readonly mainOrthographicCamera: OrthographicCamera;
+    private readonly mainPerspectiveCamera: PerspectiveCamera;
 
     constructor(canvasElement: HTMLElement) {
         this.canvasElement = canvasElement;
         this.updateSizeForContainer();
 
         this.mainScene = this.createMainScene();
-        this.mainCamera = this.createOrthographicCamera();
+
+        this.mainPerspectiveCamera = this.createPerspectiveCamera();
+        this.mainOrthographicCamera = this.createOrthographicCamera();
+        this.prepareMainCamera();
 
         this.uiScene = this.createUiScene();
         this.uiCamera = this.createOrthographicCamera();
@@ -37,6 +43,10 @@ export class SceneService {
         this.rendererService = new RenderService(this);
 
         this.setupEventListeners();
+    }
+
+    private prepareMainCamera() {
+        this.mainCamera = this.isMainPerspective ? this.mainPerspectiveCamera : this.mainOrthographicCamera;
     }
 
     public prepareModelViewer(geometry: IGeometry) {
@@ -49,11 +59,17 @@ export class SceneService {
     public setupCameras(geometry: IGeometry) {
         const center = geometry.getCenter();
 
-        this.mainCamera.position.set(center.x, center.y + 50, center.z - 10);
-        this.mainCamera.up = new Vector3(0, 0, -1);
-        this.mainCamera.lookAt(center);
-        this.mainCamera.updateProjectionMatrix();
-        this.mainCamera.updateMatrixWorld(true);
+        this.mainPerspectiveCamera.position.set(center.x, center.y + 50, center.z - 10);
+        this.mainPerspectiveCamera.up = new Vector3(0, 0, -1);
+        this.mainPerspectiveCamera.lookAt(center);
+        this.mainPerspectiveCamera.updateProjectionMatrix();
+        this.mainPerspectiveCamera.updateMatrixWorld(true);
+
+        this.mainOrthographicCamera.position.set(center.x, center.y + 50, center.z - 10);
+        this.mainOrthographicCamera.up = new Vector3(0, 0, -1);
+        this.mainOrthographicCamera.lookAt(center);
+        this.mainOrthographicCamera.updateProjectionMatrix();
+        this.mainOrthographicCamera.updateMatrixWorld(true);
 
         this.uiCamera.position.copy(this.mainCamera.position);
         this.uiCamera.quaternion.copy(this.mainCamera.quaternion);
@@ -84,6 +100,17 @@ export class SceneService {
         return new THREE.Scene();
     }
 
+    private createPerspectiveCamera(): PerspectiveCamera {
+        const aspect = this.width / this.height;
+
+        return new PerspectiveCamera(
+            45,         // fov
+            aspect,     // aspect
+            0.1,        // near
+            1000        // far
+        );
+    }
+
     private createOrthographicCamera(): OrthographicCamera {
         const aspect = this.width / this.height;
 
@@ -112,11 +139,20 @@ export class SceneService {
             this.updateSizeForContainer();
 
             const aspect = this.width / this.height;
-            this.mainCamera.left = this.frustumSize * aspect / -2;
-            this.mainCamera.right = this.frustumSize * aspect / 2;
-            this.mainCamera.top = this.frustumSize / 2;
-            this.mainCamera.bottom = this.frustumSize / -2;
-            this.mainCamera.updateProjectionMatrix();
+            this.mainOrthographicCamera.left = this.frustumSize * aspect / -2;
+            this.mainOrthographicCamera.right = this.frustumSize * aspect / 2;
+            this.mainOrthographicCamera.top = this.frustumSize / 2;
+            this.mainOrthographicCamera.bottom = this.frustumSize / -2;
+            this.mainOrthographicCamera.updateProjectionMatrix();
+
+            this.mainPerspectiveCamera.aspect = aspect;
+            this.mainPerspectiveCamera.updateProjectionMatrix();
+
+            this.uiCamera.left = this.frustumSize * aspect / -2;
+            this.uiCamera.right = this.frustumSize * aspect / 2;
+            this.uiCamera.top = this.frustumSize / 2;
+            this.uiCamera.bottom = this.frustumSize / -2;
+            this.uiCamera.updateProjectionMatrix();
 
             this.rendererService.setSize(this.width, this.height);
         });
@@ -128,5 +164,9 @@ export class SceneService {
 
     dispose() {
         this.rendererService.dispose();
+    }
+
+    setMainCamera(isMainPerspective: boolean) {
+        this.isMainPerspective = isMainPerspective;
     }
 }

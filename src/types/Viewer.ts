@@ -46,9 +46,9 @@ export class Viewer {
         this.loadJsonFileMenuItem.loadFile(file);
     }
 
-    /*public setMainCamera(isPerspective: boolean): void {
-        this.sceneService.setMainCamera(isPerspective);
-    }*/
+    public setMainCamera(isMainPerspective: boolean): void {
+        this.sceneService.setMainCamera(isMainPerspective);
+    }
 
     // Очистка при уходе со страницы
     dispose() {
