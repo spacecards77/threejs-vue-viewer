@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import Scene from './components/Scene.vue';
+import Viewer from './components/Viewer.vue';
 import openIcon from './assets/openJson.png';
 
-const sceneRef = ref<InstanceType<typeof Scene> | null>(null);
+const sceneRef = ref<InstanceType<typeof Viewer> | null>(null);
 
 // Убирание варнинга
 const openIconUrl: string = openIcon;
@@ -13,7 +13,7 @@ const handleFileChange = (event: Event) => {
   const file = target.files?.[0];
 
   if (file && sceneRef.value) {
-    // Pass the file to the Scene component
+    // Pass the file to the Viewer component
     sceneRef.value.loadJsonFile(file);
   }
 
@@ -27,7 +27,7 @@ const handleFileChange = (event: Event) => {
 <template>
   <div class="app-container">
     <!-- 3D сцена на всю страницу -->
-    <Scene ref="sceneRef" />
+    <Viewer ref="sceneRef" />
 
     <!-- Панель инструментов поверх сцены -->
     <div class="toolbar">

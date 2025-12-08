@@ -1,3 +1,3 @@
-import { SceneBuilder } from './SceneBuilder.ts';
+import { Viewer } from './Viewer.ts';
 
-new SceneBuilder(document.getElementById('app')!);
+new Viewer(document.getElementById('app')!);

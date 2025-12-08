@@ -1,13 +1,13 @@
-<!-- src/components/Scene.vue -->
+<!-- src/components/Viewer.vue -->
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { SceneBuilder } from '../types/SceneBuilder';
+import { Viewer } from '../types/Viewer.ts';
 
 // Ссылка на DOM-элемент <div>
 const containerRef = ref<HTMLElement | null>(null);
 
 // Храним инстанс мира, но НЕ делаем его реактивным
-let sceneBuilder: SceneBuilder | null = null;
+let sceneBuilder: Viewer | null = null;
 
 // Expose method to load file from parent component
 const loadJsonFile = (file: File) => {
@@ -24,7 +24,7 @@ defineExpose({
 onMounted(() => {
   if (containerRef.value) {
     // Инициализируем Three.js, передавая ему div
-    sceneBuilder = new SceneBuilder(containerRef.value);
+    sceneBuilder = new Viewer(containerRef.value);
   }
 });
 

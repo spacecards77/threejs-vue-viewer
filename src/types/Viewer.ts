@@ -5,7 +5,7 @@ import { config } from './config.ts';
 import { AutoLoadJsonService } from '../services/AutoLoadJsonService.ts';
 import {LoadJsonFileMenuItem} from "./controls/menu/LoadJsonFileMenuItem.ts";
 
-export class SceneBuilder {
+export class Viewer {
     private readonly sceneService: SceneService;
     private readonly drawService: DrawService;
     private construction: Construction | null = null;
@@ -45,6 +45,10 @@ export class SceneBuilder {
     public loadJsonFile(file: File): void {
         this.loadJsonFileMenuItem.loadFile(file);
     }
+
+    /*public setMainCamera(isPerspective: boolean): void {
+        this.sceneService.setMainCamera(isPerspective);
+    }*/
 
     // Очистка при уходе со страницы
     dispose() {
