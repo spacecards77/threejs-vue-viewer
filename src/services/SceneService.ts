@@ -63,8 +63,7 @@ export class SceneService {
     }
 
     private updateSizeForContainer(): void {
-        this.canvasElement = document.getElementById('app');
-        AssertUtils.isNotNull(this.canvasElement, 'SceneService: element with id="app" not found.');
+        AssertUtils.isNotNull(this.canvasElement, 'SceneService: canvasElement is null.');
 
         this.width = this.canvasElement?.clientWidth ?? 0;
         this.height = this.canvasElement?.clientHeight ?? 0;
