@@ -1,23 +1,21 @@
 import { SceneService } from '../services/SceneService.ts';
 import { Construction } from "./model";
 import type {DrawService} from "../services/DrawService.ts";
-import { LoadJsonUiController } from '../services/LoadJsonUiController.ts';
 import { config } from './config.ts';
 import { AutoLoadJsonService } from '../services/AutoLoadJsonService.ts';
+import {LoadJsonFileMenuItem} from "./controls/menu/LoadJsonFileMenuItem.ts";
 
 export class SceneBuilder {
     private readonly sceneService: SceneService;
     private readonly drawService: DrawService;
     private construction: Construction | null = null;
+    private loadJsonFileMenuItem: LoadJsonFileMenuItem;
 
     constructor(canvasElement: HTMLElement) {
         this.sceneService = new SceneService(canvasElement);
         this.drawService = this.sceneService.drawService;
+        this.loadJsonFileMenuItem = new LoadJsonFileMenuItem(this.handleConstructionLoaded);
 
-        // Create a single callback handler and pass it to both the UI loader and the auto-loader
-        //new LoadJsonUiController(this.handleConstructionLoaded);
-
-        // If configured to autoload a JSON path, try to fetch and draw it now.
         const path = config.debugMode ? config.autoLoadJson?.trim() : '';
         if (path) {
             const auto = new AutoLoadJsonService(this.handleConstructionLoaded);
@@ -25,10 +23,7 @@ export class SceneBuilder {
         }
     }
 
-    // Unified callback used by both LoadJsonUiController and AutoLoadJsonService.
-    // It delegates to processConstruction when a valid construction is provided,
-    // otherwise clears the current construction (controller already shows errors).
-    private handleConstructionLoaded = (construction: Construction | null): void => {
+    private handleConstructionLoaded = (construction: Construction): void => {
         if (construction) {
             this.processConstruction(construction);
         } else {
@@ -45,6 +40,10 @@ export class SceneBuilder {
         this.drawService.addConstructionToScene(this.construction);
 
         this.sceneService.prepareModelViewer(construction.geometry);
+    }
+
+    public loadJsonFile(file: File): void {
+        this.loadJsonFileMenuItem.loadFile(file);
     }
 
     // Очистка при уходе со страницы

@@ -6,9 +6,9 @@ import {AssertUtils} from "../utils/assert/AssertUtils.ts";
 
 export class AutoLoadJsonService {
     private readonly jsonService: JsonService;
-    private onConstructionLoaded?: (construction: Construction | null) => void;
+    private onConstructionLoaded?: (construction: Construction) => void;
 
-    constructor(onConstructionLoaded?: (construction: Construction | null) => void) {
+    constructor(onConstructionLoaded?: (construction: Construction) => void) {
         this.jsonService = new JsonService();
         this.onConstructionLoaded = onConstructionLoaded;
     }
@@ -30,8 +30,6 @@ export class AutoLoadJsonService {
                 // user-visible notification
                 alert(`Ошибка автозагрузки модели: ${err}`);
             }
-            // Notify caller about the failure
-            this.onConstructionLoaded?.(null);
         }
     }
 }

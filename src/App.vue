@@ -1,26 +1,42 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import Scene from './components/Scene.vue';
 import openIcon from './assets/open.png';
 
-const handleOpenFile = () => {
-  alert('Открыть файл json');
+const sceneRef = ref<InstanceType<typeof Scene> | null>(null);
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (file && sceneRef.value) {
+    // Pass the file to the Scene component
+    sceneRef.value.loadJsonFile(file);
+  }
+
+  // Reset input so the same file can be selected again
+  if (target) {
+    target.value = '';
+  }
 };
 </script>
 
 <template>
   <div class="app-container">
     <!-- 3D сцена на всю страницу -->
-    <Scene />
+    <Scene ref="sceneRef" />
 
     <!-- Панель инструментов поверх сцены -->
     <div class="toolbar">
-      <button
-        class="toolbar-button"
-        @click="handleOpenFile"
-        title="Открыть json"
-      >
+      <label class="toolbar-button" title="Открыть json">
         <img :src="openIcon" alt="Open" class="toolbar-icon" />
-      </button>
+        <input
+          type="file"
+          accept=".json"
+          style="display: none"
+          @change="handleFileChange"
+        />
+      </label>
     </div>
   </div>
 </template>
@@ -56,6 +72,7 @@ const handleOpenFile = () => {
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+  margin: 0;
 }
 
 .toolbar-button:hover {

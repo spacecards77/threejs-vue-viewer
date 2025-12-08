@@ -6,8 +6,20 @@ import { SceneBuilder } from '../types/SceneBuilder';
 // Ссылка на DOM-элемент <div>
 const containerRef = ref<HTMLElement | null>(null);
 
-// Храним инстанс мира, но НЕ делаем его реактивным (просто let или shallowRef)
+// Храним инстанс мира, но НЕ делаем его реактивным
 let sceneBuilder: SceneBuilder | null = null;
+
+// Expose method to load file from parent component
+const loadJsonFile = (file: File) => {
+  if (sceneBuilder) {
+    sceneBuilder.loadJsonFile(file);
+  }
+};
+
+// Expose method to parent component
+defineExpose({
+  loadJsonFile
+});
 
 onMounted(() => {
   if (containerRef.value) {
