@@ -197,7 +197,7 @@ export class ModelViewer {
      * @param configuredKeys - The configured key(s) string, can contain multiple keys separated by ';'
      * @returns true if the pressed key matches any of the configured keys
      */
-    private isKeyMatch(pressedKey: string, configuredKeys: string): boolean {
+    private isKeyMatch(pressedKey: string, configuredKeys: string | undefined): boolean {
         if (!configuredKeys) {
             return false;
         }

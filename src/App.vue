@@ -5,6 +5,9 @@ import openIcon from './assets/open.png';
 
 const sceneRef = ref<InstanceType<typeof Scene> | null>(null);
 
+// Убирание варнинга
+const openIconUrl: string = openIcon;
+
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
@@ -29,7 +32,7 @@ const handleFileChange = (event: Event) => {
     <!-- Панель инструментов поверх сцены -->
     <div class="toolbar">
       <label class="toolbar-button" title="Открыть json">
-        <img :src="openIcon" alt="Open" class="toolbar-icon" />
+        <img :src="openIconUrl" alt="Open" class="toolbar-icon" />
         <input
           type="file"
           accept=".json"
