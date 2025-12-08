@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Scene from './components/Scene.vue';
-import openIcon from './assets/open.png';
+import openIcon from './assets/openJson.png';
 
 const sceneRef = ref<InstanceType<typeof Scene> | null>(null);
 
