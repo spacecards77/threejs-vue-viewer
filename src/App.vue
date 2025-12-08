@@ -1,18 +1,26 @@
 <script setup lang="ts">
 import Scene from './components/Scene.vue';
-import { ref } from 'vue';
+import openIcon from './assets/open.png';
 
-const score = ref(0);
+const handleOpenFile = () => {
+  alert('Открыть файл json');
+};
 </script>
 
 <template>
   <div class="app-container">
-    <!-- Ваша 3D сцена на фоне -->
+    <!-- 3D сцена на всю страницу -->
     <Scene />
 
-    <div class="ui-layer">
-      <h1>Очки: {{ score }}</h1>
-      <button @click="score++">Нажми меня</button>
+    <!-- Панель инструментов поверх сцены -->
+    <div class="toolbar">
+      <button
+        class="toolbar-button"
+        @click="handleOpenFile"
+        title="Открыть json"
+      >
+        <img :src="openIcon" alt="Open" class="toolbar-icon" />
+      </button>
     </div>
   </div>
 </template>
@@ -24,16 +32,39 @@ const score = ref(0);
   height: 100%;
 }
 
-.ui-layer {
+.toolbar {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 10; /* Интерфейс поверх канваса */
-  color: white;
-  pointer-events: none; /* Позволяет взаимодействовать с 3D сценой через UI */
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background-color: #E5EAF3;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.ui-layer > * {
-  pointer-events: auto; /* Восстанавливаем взаимодействие для элементов UI */
+.toolbar-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.toolbar-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.toolbar-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 </style>
