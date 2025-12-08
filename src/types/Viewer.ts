@@ -35,7 +35,7 @@ export class Viewer {
         this.construction = construction;
 
         //должно быть до отрисовки Ui, чтобы привязать статические оси к позиции на экране
-        this.sceneService.setupCameras(construction.geometry);
+        this.sceneService.setupCameras(this.construction.geometry);
 
         this.drawService.addConstructionToScene(this.construction);
 
@@ -48,6 +48,8 @@ export class Viewer {
 
     public setMainCamera(isMainPerspective: boolean): void {
         this.sceneService.setMainCamera(isMainPerspective);
+        /*if (this.construction)
+            this.processConstruction(this.construction);*/
     }
 
     // Очистка при уходе со страницы

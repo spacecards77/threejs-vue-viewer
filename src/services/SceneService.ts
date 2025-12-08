@@ -159,7 +159,7 @@ export class SceneService {
     }
 
     createDrawService() {
-        return new DrawService(this.mainScene, this.uiScene, this.mainCamera, this.uiCamera);
+        return new DrawService(this.mainScene, this.uiScene, () => this.mainCamera, this.uiCamera);
     }
 
     dispose() {

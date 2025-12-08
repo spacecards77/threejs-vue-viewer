@@ -3,15 +3,19 @@ import {Camera, type Quaternion, Scene, Vector3} from "three";
 
 export class CoordinateAxesService extends LineService {
     private readonly uiCamera: Camera;
-    private readonly mainCamera: Camera;
+    private readonly getMainCamera: () => Camera;
+    get mainCamera(): Camera {
+        return this.getMainCamera();
+    }
+
     length = 1.5;
     lineWidth = 3;
 
 
-    constructor(scene: Scene, center: Vector3, mainCamera: Camera, uiCamera: Camera) {
+    constructor(scene: Scene, center: Vector3, getMainCamera:() => Camera, uiCamera: Camera) {
         super(scene, center);
 
-        this.mainCamera = mainCamera;
+        this.getMainCamera = getMainCamera;
         this.uiCamera = uiCamera;
     }
 

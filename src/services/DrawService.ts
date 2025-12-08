@@ -8,16 +8,20 @@ import {CoordinateAxesService} from "./line/CoordinateAxesService.ts";
 export class DrawService {
     private readonly mainScene: Scene;
     private readonly uiScene: Scene;
-    private readonly mainCamera: Camera;
+    private readonly getMainCamera: () => Camera;
+    get mainCamera(): Camera {
+        return this.getMainCamera();
+    }
     private readonly uiCamera: Camera;
     private mainLineService!: LineService;
     private connectedAxesService!: CoordinateAxesService;
     private staticAxesService!: CoordinateAxesService;
 
-    constructor(mainScene: Scene, uiScene: Scene, mainCamera: THREE.Camera, uiCamera: THREE.Camera) {
+    constructor(mainScene: Scene, uiScene: Scene, getMainCamera:() => Camera, uiCamera: THREE.Camera) {
         this.mainScene = mainScene;
         this.uiScene = uiScene;
-        this.mainCamera = mainCamera;
+
+        this.getMainCamera = getMainCamera;
         this.uiCamera = uiCamera;
     }
 
@@ -91,13 +95,14 @@ export class DrawService {
         if (this.connectedAxesService) {
             this.connectedAxesService.clearAllLines();
         }
-        this.connectedAxesService = new CoordinateAxesService(this.uiScene, center, this.mainCamera, this.uiCamera);
+        this.connectedAxesService = new CoordinateAxesService(this.uiScene, center, this.getMainCamera, this.uiCamera);
 
         if (this.staticAxesService) {
             this.staticAxesService.clearAllLines();
         }
-        this.staticAxesService = new CoordinateAxesService(this.uiScene, center, this.mainCamera, this.uiCamera);
+        this.staticAxesService = new CoordinateAxesService(this.uiScene, center, this.getMainCamera, this.uiCamera);
 
     }
+
 }
 
