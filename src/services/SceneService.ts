@@ -1,0 +1,134 @@
+import * as THREE from 'three';
+import {OrthographicCamera, Vector3} from 'three';
+import {DrawService} from "./DrawService.ts";
+import type {IGeometry} from "../types/model/IGeometry.ts";
+import {ModelViewer} from "../types/controls/ModelViewer.ts";
+import {config} from "../types/config.ts";
+import {AssertUtils} from "../utils/assert/AssertUtils.ts";
+import type {GeometryView} from "../types/view/GeometryView.ts";
+import {RenderService} from './RenderService.ts';
+
+export class SceneService {
+    public readonly drawService: DrawService;
+    readonly mainScene: THREE.Scene;
+    readonly mainCamera: OrthographicCamera;
+    readonly uiScene: THREE.Scene;
+    readonly uiCamera: OrthographicCamera;
+
+    private rendererService!: RenderService;
+    private frustumSize = 40;
+
+    canvasElement!: HTMLElement | null;
+    width: number = 0;
+    height: number = 0;
+    geometryView: GeometryView | null = null;
+
+    constructor(canvasElement: HTMLElement) {
+        this.canvasElement = canvasElement;
+        this.updateSizeForContainer();
+
+        this.mainScene = this.createMainScene();
+        this.mainCamera = this.createOrthographicCamera();
+
+        this.uiScene = this.createUiScene();
+        this.uiCamera = this.createOrthographicCamera();
+
+        this.drawService = this.createDrawService();
+
+        this.rendererService = new RenderService(this);
+
+        this.setupEventListeners();
+    }
+
+    public prepareModelViewer(geometry: IGeometry) {
+        AssertUtils.isNotNull(geometry.GeometryView, 'SceneService: GeometryView is null.');
+
+        this.geometryView = geometry.GeometryView;
+        new ModelViewer(this.geometryView!, this.rendererService.domElement, this.mainCamera);
+    }
+
+    public setupCameras(geometry: IGeometry) {
+        const center = geometry.getCenter();
+
+        this.mainCamera.position.set(center.x, center.y + 50, center.z - 10);
+        this.mainCamera.up = new Vector3(0, 0, -1);
+        this.mainCamera.lookAt(center);
+        this.mainCamera.updateProjectionMatrix();
+        this.mainCamera.updateMatrixWorld(true);
+
+        this.uiCamera.position.copy(this.mainCamera.position);
+        this.uiCamera.quaternion.copy(this.mainCamera.quaternion);
+        this.uiCamera.updateProjectionMatrix();
+        this.uiCamera.updateMatrixWorld(true);
+    }
+
+    private updateSizeForContainer(): void {
+        this.canvasElement = document.getElementById('app');
+        AssertUtils.isNotNull(this.canvasElement, 'SceneService: element with id="app" not found.');
+
+        this.width = this.canvasElement?.clientWidth ?? 0;
+        this.height = this.canvasElement?.clientHeight ?? 0;
+    }
+
+    private createMainScene(): THREE.Scene {
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        if (config.debugMode) {
+            const axesHelper = new THREE.AxesHelper(5);
+            scene.add(axesHelper);
+        }
+
+        return scene;
+    }
+
+    private createUiScene(): THREE.Scene {
+        return new THREE.Scene();
+    }
+
+    private createOrthographicCamera(): OrthographicCamera {
+        const aspect = this.width / this.height;
+
+        return new OrthographicCamera(
+            this.frustumSize * aspect / -2, // left
+            this.frustumSize * aspect / 2,  // right
+            this.frustumSize / 2,           // top
+            this.frustumSize / -2,          // bottom
+            0.1,                       // near
+            1000                        // far
+        );
+    }
+
+    /*
+      //Поддержка широкоформатных экранов с высоким DPI
+      private updateRendererPixelRatioAndSize(): void {
+        if (!this.renderer) return;
+        // cap devicePixelRatio for performance (2 is a reasonable default cap)
+        const capped = Math.min(window.devicePixelRatio || 1, 2);
+        this.renderer.setPixelRatio(capped);
+        //this.renderer.setSize(this.width, this.height);
+    }*/
+
+    private setupEventListeners(): void {
+        window.addEventListener('resize', () => {
+            this.updateSizeForContainer();
+
+            const aspect = this.width / this.height;
+            this.mainCamera.left = this.frustumSize * aspect / -2;
+            this.mainCamera.right = this.frustumSize * aspect / 2;
+            this.mainCamera.top = this.frustumSize / 2;
+            this.mainCamera.bottom = this.frustumSize / -2;
+            this.mainCamera.updateProjectionMatrix();
+
+            this.rendererService.setSize(this.width, this.height);
+        });
+    }
+
+    createDrawService() {
+        return new DrawService(this.mainScene, this.uiScene, this.mainCamera, this.uiCamera);
+    }
+
+    dispose() {
+        this.rendererService.dispose();
+    }
+}
