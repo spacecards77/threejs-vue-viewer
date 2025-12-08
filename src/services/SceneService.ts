@@ -3,7 +3,6 @@ import {OrthographicCamera, Vector3} from 'three';
 import {DrawService} from "./DrawService.ts";
 import type {IGeometry} from "../types/model/IGeometry.ts";
 import {ModelViewer} from "../types/controls/ModelViewer.ts";
-import {config} from "../types/config.ts";
 import {AssertUtils} from "../utils/assert/AssertUtils.ts";
 import type {GeometryView} from "../types/view/GeometryView.ts";
 import {RenderService} from './RenderService.ts';
@@ -73,10 +72,10 @@ export class SceneService {
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x000000);
 
-        if (config.debugMode) {
+        /*if (config.debugMode) {
             const axesHelper = new THREE.AxesHelper(5);
             scene.add(axesHelper);
-        }
+        }*/
 
         return scene;
     }
