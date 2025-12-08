@@ -7,31 +7,39 @@ import { Viewer } from '../types/Viewer.ts';
 const containerRef = ref<HTMLElement | null>(null);
 
 // Храним инстанс мира, но НЕ делаем его реактивным
-let sceneBuilder: Viewer | null = null;
+let viewer: Viewer | null = null;
 
 // Expose method to load file from parent component
 const loadJsonFile = (file: File) => {
-  if (sceneBuilder) {
-    sceneBuilder.loadJsonFile(file);
+  if (viewer) {
+    viewer.loadJsonFile(file);
   }
 };
 
-// Expose method to parent component
+// Expose method to set main camera
+const setMainCamera = (isMainPerspective: boolean) => {
+  if (viewer) {
+    viewer.setMainCamera(isMainPerspective);
+  }
+};
+
+// Expose methods to parent component
 defineExpose({
-  loadJsonFile
+  loadJsonFile,
+  setMainCamera
 });
 
 onMounted(() => {
   if (containerRef.value) {
     // Инициализируем Three.js, передавая ему div
-    sceneBuilder = new Viewer(containerRef.value);
+    viewer = new Viewer(containerRef.value);
   }
 });
 
 onUnmounted(() => {
   // Важно: очистка памяти при переходе на другую страницу
-  if (sceneBuilder) {
-    sceneBuilder.dispose();
+  if (viewer) {
+    viewer.dispose();
   }
 });
 </script>

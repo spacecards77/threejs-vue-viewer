@@ -2,11 +2,14 @@
 import { ref } from 'vue';
 import Viewer from './components/Viewer.vue';
 import openIcon from './assets/openJson.png';
+import perspectiveIcon from './assets/perspectiveView.png';
 
 const sceneRef = ref<InstanceType<typeof Viewer> | null>(null);
+const isPerspectiveView = ref(false);
 
 // Убирание варнинга
 const openIconUrl: string = openIcon;
+const perspectiveIconUrl: string = perspectiveIcon;
 
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -20,6 +23,13 @@ const handleFileChange = (event: Event) => {
   // Reset input so the same file can be selected again
   if (target) {
     target.value = '';
+  }
+};
+
+const togglePerspectiveView = () => {
+  isPerspectiveView.value = !isPerspectiveView.value;
+  if (sceneRef.value) {
+    sceneRef.value.setMainCamera(isPerspectiveView.value);
   }
 };
 </script>
@@ -40,6 +50,14 @@ const handleFileChange = (event: Event) => {
           @change="handleFileChange"
         />
       </label>
+      <button
+        class="toolbar-button"
+        :class="{ active: isPerspectiveView }"
+        @click="togglePerspectiveView"
+        title="Перспективный вид"
+      >
+        <img :src="perspectiveIconUrl" alt="Perspective View" class="toolbar-icon" />
+      </button>
     </div>
   </div>
 </template>
@@ -80,6 +98,11 @@ const handleFileChange = (event: Event) => {
 
 .toolbar-button:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.toolbar-button.active {
+  background-color: rgba(0, 120, 215, 0.2);
+  border: 2px solid rgba(0, 120, 215, 0.6);
 }
 
 .toolbar-icon {

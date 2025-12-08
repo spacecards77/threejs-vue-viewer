@@ -21,7 +21,7 @@ export class SceneService {
     width: number = 0;
     height: number = 0;
     geometryView: GeometryView | null = null;
-    private isMainPerspective: boolean = true;
+    private isMainPerspective: boolean = false;
     private readonly mainOrthographicCamera: OrthographicCamera;
     private readonly mainPerspectiveCamera: PerspectiveCamera;
 
@@ -168,5 +168,6 @@ export class SceneService {
 
     setMainCamera(isMainPerspective: boolean) {
         this.isMainPerspective = isMainPerspective;
+        this.prepareMainCamera();
     }
 }
