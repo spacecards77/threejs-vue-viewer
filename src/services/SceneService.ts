@@ -1,14 +1,17 @@
 import * as THREE from 'three';
-import {type Camera, OrthographicCamera, PerspectiveCamera, Vector3} from 'three';
+import {type Camera, OrthographicCamera, PerspectiveCamera} from 'three';
 import {DrawService} from "./DrawService.ts";
 import type {IGeometry} from "../types/model/IGeometry.ts";
 import {ModelViewer} from "../types/controls/ModelViewer.ts";
 import {AssertUtils} from "../utils/assert/AssertUtils.ts";
 import type {GeometryView} from "../types/view/GeometryView.ts";
 import {RenderService} from './RenderService.ts';
+import {CameraViewService} from "./camera/CameraViewService.ts";
 
 export class SceneService {
     public readonly drawService: DrawService;
+    public readonly cameraViewService: CameraViewService;
+
     readonly mainScene: THREE.Scene;
     mainCamera!: Camera;
     readonly uiScene: THREE.Scene;
@@ -38,7 +41,8 @@ export class SceneService {
         this.uiScene = this.createUiScene();
         this.uiCamera = this.createOrthographicCamera();
 
-        this.drawService = this.createDrawService();
+        this.drawService = new DrawService(this.mainScene, this.uiScene, () => this.mainCamera, this.uiCamera);
+        this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.uiCamera);
 
         this.rendererService = new RenderService(this);
 
@@ -54,27 +58,6 @@ export class SceneService {
 
         this.geometryView = geometry.GeometryView;
         new ModelViewer(this.geometryView!, this.rendererService.domElement, () => this.mainCamera);
-    }
-
-    public setupCameras(geometry: IGeometry) {
-        const center = geometry.getCenter();
-
-        this.mainPerspectiveCamera.position.set(center.x, center.y + 50, center.z - 10);
-        this.mainPerspectiveCamera.up = new Vector3(0, 0, -1);
-        this.mainPerspectiveCamera.lookAt(center);
-        this.mainPerspectiveCamera.updateProjectionMatrix();
-        this.mainPerspectiveCamera.updateMatrixWorld(true);
-
-        this.mainOrthographicCamera.position.set(center.x, center.y + 50, center.z - 10);
-        this.mainOrthographicCamera.up = new Vector3(0, 0, -1);
-        this.mainOrthographicCamera.lookAt(center);
-        this.mainOrthographicCamera.updateProjectionMatrix();
-        this.mainOrthographicCamera.updateMatrixWorld(true);
-
-        this.uiCamera.position.copy(this.mainCamera.position);
-        this.uiCamera.quaternion.copy(this.mainCamera.quaternion);
-        this.uiCamera.updateProjectionMatrix();
-        this.uiCamera.updateMatrixWorld(true);
     }
 
     private updateSizeForContainer(): void {
@@ -156,10 +139,6 @@ export class SceneService {
 
             this.rendererService.setSize(this.width, this.height);
         });
-    }
-
-    createDrawService() {
-        return new DrawService(this.mainScene, this.uiScene, () => this.mainCamera, this.uiCamera);
     }
 
     dispose() {
