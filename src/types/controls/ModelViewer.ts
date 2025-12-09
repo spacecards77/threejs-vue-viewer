@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {Object3D, Vector3, Vector2, MOUSE, PerspectiveCamera, OrthographicCamera, type Camera} from 'three';
+import {Object3D, Vector3, Vector2, MOUSE, type Camera} from 'three';
 import type {GeometryView} from "../view/GeometryView.ts";
 
 const STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2 };
@@ -158,10 +158,10 @@ export class ModelViewer {
             this.alignObjectUpVector();
         } else if (effectiveState === STATE.ZOOM && !this.noZoom) {
             this.zoomEnd.set(event.clientX, event.clientY);
-            this.zoomCamera();
+            this.zoomModel();
         } else if (effectiveState === STATE.PAN && !this.noPan) {
             this.panEnd.set(event.clientX, event.clientY);
-            this.panCamera();
+            this.panModel();
         }
 
         this.previousMousePosition = {
@@ -240,7 +240,7 @@ export class ModelViewer {
                 break;
         }
 
-        this.zoomCamera();
+        this.zoomModel();
     }
 
     private rotateObject(deltaX: number, deltaY: number): void {
@@ -361,7 +361,7 @@ export class ModelViewer {
      * Zoom the camera based on mouse movement
      * Handles PerspectiveCamera and OrthographicCamera differently
      */
-    private zoomCamera(): void {
+    /*private zoomCamera(): void {
         const factor = 1.0 + (this.zoomEnd.y - this.zoomStart.y) * this.zoomSpeed;
 
         if (factor !== 1.0 && factor > 0.0) {
@@ -394,12 +394,24 @@ export class ModelViewer {
             // Update zoomStart.y to match zoomEnd.y to consume the delta
             this.zoomStart.y = this.zoomEnd.y;
         }
+    }*/
+
+    private zoomModel(): void {
+        const factor = 1.0 + (this.zoomEnd.y - this.zoomStart.y) * this.zoomSpeed;
+
+        if (factor !== 1.0 && factor > 0.0) {
+            this.geometryView.Parent.scale.multiplyScalar(factor);
+
+            // Reset the zoom delta
+            // Update zoomStart.y to match zoomEnd.y to consume the delta
+            this.zoomStart.y = this.zoomEnd.y;
+        }
     }
 
     /**
      * Pan the camera based on mouse movement
      */
-    private panCamera(): void {
+    private panModel(): void {
         const deltaX = this.panEnd.x - this.panStart.x;
         const deltaY = this.panEnd.y - this.panStart.y;
 
