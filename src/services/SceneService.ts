@@ -41,7 +41,7 @@ export class SceneService {
         this.uiScene = this.createUiScene();
         this.uiCamera = this.createOrthographicCamera();
 
-        this.drawService = new DrawService(this.mainScene, this.uiScene, () => this.mainCamera, this.uiCamera);
+        this.drawService = new DrawService(this);
         this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.uiCamera);
 
         this.rendererService = new RenderService(this);

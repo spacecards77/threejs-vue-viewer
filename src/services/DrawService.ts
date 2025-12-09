@@ -1,28 +1,19 @@
 import * as THREE from 'three';
-import {type Camera, Quaternion, type Scene, Vector3} from 'three';
+import {type Quaternion, Vector3} from 'three';
 import {Construction, Geometry} from '../types/model';
 import {LineService} from './line/LineService.ts';
 import {config} from "../types/config.ts";
 import {CoordinateAxesService} from "./line/CoordinateAxesService.ts";
+import type {SceneService} from "./SceneService.ts";
 
 export class DrawService {
-    private readonly mainScene: Scene;
-    private readonly uiScene: Scene;
-    private readonly getMainCamera: () => Camera;
-    get mainCamera(): Camera {
-        return this.getMainCamera();
-    }
-    private readonly uiCamera: Camera;
+    private readonly sceneService: SceneService;
     private mainLineService!: LineService;
     private connectedAxesService!: CoordinateAxesService;
     private staticAxesService!: CoordinateAxesService;
 
-    constructor(mainScene: Scene, uiScene: Scene, getMainCamera:() => Camera, uiCamera: THREE.Camera) {
-        this.mainScene = mainScene;
-        this.uiScene = uiScene;
-
-        this.getMainCamera = getMainCamera;
-        this.uiCamera = uiCamera;
+    constructor(sceneService: SceneService) {
+        this.sceneService = sceneService;
     }
 
     //ARCHITECTURE: Разделить на DrawGeometry и DrawUi
@@ -90,17 +81,17 @@ export class DrawService {
         if (this.mainLineService) {
             this.mainLineService.clearAllLines();
         }
-        this.mainLineService = new LineService(this.mainScene, center);
+        this.mainLineService = new LineService(this.sceneService.mainScene, center);
 
         if (this.connectedAxesService) {
             this.connectedAxesService.clearAllLines();
         }
-        this.connectedAxesService = new CoordinateAxesService(this.uiScene, center, this.getMainCamera, this.uiCamera);
+        this.connectedAxesService = new CoordinateAxesService(this.sceneService.uiScene, center, () => this.sceneService.mainCamera, this.sceneService.uiCamera);
 
         if (this.staticAxesService) {
             this.staticAxesService.clearAllLines();
         }
-        this.staticAxesService = new CoordinateAxesService(this.uiScene, center, this.getMainCamera, this.uiCamera);
+        this.staticAxesService = new CoordinateAxesService(this.sceneService.uiScene, center, () => this.sceneService.mainCamera, this.sceneService.uiCamera);
 
     }
 
