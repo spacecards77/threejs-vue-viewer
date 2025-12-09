@@ -1,20 +1,11 @@
 import * as THREE from 'three';
-import {type Camera, MOUSE, type Quaternion, Vector2, Vector3} from 'three';
-import type {GeometryView} from "../view/GeometryView.ts";
+import {MOUSE, Vector2, Vector3} from 'three';
+import type {SceneService} from "../../services/SceneService.ts";
 
 const STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2 };
 
-export class ModelViewer {
-    private readonly geometryView: GeometryView;
-    private domElement: HTMLElement;
-    private getCamera: () => Camera;
-    private startPosition: Vector3;
-    private startQuaternion: Quaternion;
-    private startScale: Vector3;
-
-    get camera(): Camera {
-        return this.getCamera();
-    }
+export class ModelNavigationService {
+    private sceneService: SceneService;
 
     // Speeds
     private rotationSpeed: number = 0.002;
@@ -56,32 +47,24 @@ export class ModelViewer {
     private panStart: Vector2 = new Vector2();
     private panEnd: Vector2 = new Vector2();
 
-    constructor(geometryView: GeometryView, domElement: HTMLElement, getCamera: () => THREE.Camera) {
-        this.geometryView = geometryView;
-        this.startPosition = geometryView.position.clone();
-        this.startQuaternion = geometryView.quaternion.clone();
-        this.startScale = geometryView.scale.clone();
-
-        this.domElement = domElement;
-        this.getCamera = getCamera;
+    constructor(sceneService: SceneService) {
+        this.sceneService = sceneService;
 
         this.setupEventListeners();
     }
 
-    public reset(): void {
-        this.geometryView.position.copy(this.startPosition);
-        this.geometryView.quaternion.copy(this.startQuaternion);
-        this.geometryView.scale.copy(this.startScale);
-    }
-
-    private setupEventListeners(): void {
-        this.domElement.addEventListener('mousedown', this.onMouseDown.bind(this));
-        this.domElement.addEventListener('mousemove', this.onMouseMove.bind(this));
-        this.domElement.addEventListener('mouseup', this.onMouseUp.bind(this));
-        this.domElement.addEventListener('mouseleave', this.onMouseLeave.bind(this));
-        this.domElement.addEventListener('wheel', this.onMouseWheel.bind(this), { passive: false });
-        window.addEventListener('keydown', this.onKeyDown.bind(this));
-        window.addEventListener('keyup', this.onKeyUp.bind(this));
+    /**
+     * Dispose of event listeners
+     */
+    public dispose(): void {
+        const domElement = this.sceneService.rendererService.domElement;
+        domElement.removeEventListener('mousedown', this.onMouseDown.bind(this));
+        domElement.removeEventListener('mousemove', this.onMouseMove.bind(this));
+        domElement.removeEventListener('mouseup', this.onMouseUp.bind(this));
+        domElement.removeEventListener('mouseleave', this.onMouseLeave.bind(this));
+        domElement.removeEventListener('wheel', this.onMouseWheel.bind(this));
+        window.removeEventListener('keydown', this.onKeyDown.bind(this));
+        window.removeEventListener('keyup', this.onKeyUp.bind(this));
     }
 
     private onMouseDown(event: MouseEvent): void {
@@ -241,9 +224,23 @@ export class ModelViewer {
         this.zoomModel();
     }
 
+    private setupEventListeners(): void {
+        const domElement = this.sceneService.rendererService.domElement;
+        domElement.addEventListener('mousedown', this.onMouseDown.bind(this));
+        domElement.addEventListener('mousemove', this.onMouseMove.bind(this));
+        domElement.addEventListener('mouseup', this.onMouseUp.bind(this));
+        domElement.addEventListener('mouseleave', this.onMouseLeave.bind(this));
+        domElement.addEventListener('wheel', this.onMouseWheel.bind(this), {passive: false});
+        window.addEventListener('keydown', this.onKeyDown.bind(this));
+        window.addEventListener('keyup', this.onKeyUp.bind(this));
+    }
+
     private rotateObject(deltaX: number, deltaY: number): void {
+        if (!this.sceneService.geometryView)
+            return;
+
         const objectWorldPosition = new Vector3();
-        this.geometryView.getWorldPosition(objectWorldPosition);
+        this.sceneService.geometryView.getWorldPosition(objectWorldPosition);
 
         if (deltaX !== 0) {
             const rotationAngleY = deltaX * this.rotationSpeed;
@@ -264,13 +261,16 @@ export class ModelViewer {
      * @param point - The point through which the axis passes
      */
     private rotateAroundWorldAxis(axis: Vector3, angle: number, point: Vector3): void {
+        if (!this.sceneService.geometryView)
+            return;
+
         // Create a quaternion representing the rotation
         const quaternion = new THREE.Quaternion();
         quaternion.setFromAxisAngle(axis, angle);
 
         // Get the object's world position
         const objectWorldPosition = new Vector3();
-        this.geometryView.getWorldPosition(objectWorldPosition);
+        this.sceneService.geometryView.getWorldPosition(objectWorldPosition);
 
         // Calculate the vector from the rotation point to the object
         const offset = objectWorldPosition.sub(point);
@@ -281,77 +281,19 @@ export class ModelViewer {
         // Update object position
         const newPosition = new Vector3().addVectors(point, offset);
 
-        if (this.geometryView.parent) {
+        if (this.sceneService.geometryView.parent) {
             // Convert world position to local position
             const parentWorldMatrix = new THREE.Matrix4();
-            parentWorldMatrix.copy(this.geometryView.parent.matrixWorld);
+            parentWorldMatrix.copy(this.sceneService.geometryView.parent.matrixWorld);
             const inverseParentMatrix = new THREE.Matrix4();
             inverseParentMatrix.copy(parentWorldMatrix).invert();
             newPosition.applyMatrix4(inverseParentMatrix);
         }
 
-        this.geometryView.position.copy(newPosition);
+        this.sceneService.geometryView.position.copy(newPosition);
 
         // Apply the rotation to the object's orientation
-        this.geometryView.quaternion.multiplyQuaternions(quaternion, this.geometryView.quaternion);
-    }
-
-    private alignObjectUpVector(): void {
-        // Get world positions
-        const cameraWorldPosition = new Vector3();
-        this.camera.getWorldPosition(cameraWorldPosition);
-
-        const objectWorldPosition = new Vector3();
-        this.geometryView.getWorldPosition(objectWorldPosition);
-
-        // Calculate the axis from object to camera (rotation axis)
-        const objectToCamera = new Vector3().subVectors(cameraWorldPosition, objectWorldPosition);
-        const distance = objectToCamera.length();
-
-        if (distance < 0.001) return; // Camera too close to object
-
-        objectToCamera.normalize();
-
-        // Get object's current up vector in world space
-        const currentObjectUp = this.desiredUp.clone();
-        currentObjectUp.applyQuaternion(this.geometryView.quaternion);
-        currentObjectUp.normalize();
-
-        // Calculate angle between current up and desired up
-        const cosTheta = THREE.MathUtils.clamp(currentObjectUp.dot(this.desiredUp), -1, 1);
-        const angleBetweenUps = Math.acos(cosTheta);
-        if (angleBetweenUps > this.maxAngleToStartAlign) {
-            return;
-        }
-
-        // Project both up vectors onto the plane perpendicular to objectToCamera
-        const projectedCurrentUp = currentObjectUp.clone().sub(
-            objectToCamera.clone().multiplyScalar(currentObjectUp.dot(objectToCamera))
-        ).normalize();
-
-        const projectedDesiredUp = this.desiredUp.clone().sub(
-            objectToCamera.clone().multiplyScalar(this.desiredUp.dot(objectToCamera))
-        ).normalize();
-
-        // Check if projections are valid
-        if (projectedCurrentUp.length() < 0.001 || projectedDesiredUp.length() < 0.001) {
-            return; // Up vectors are parallel to the view axis
-        }
-
-        // Calculate the angle between projected up vectors
-        const cosAngle = THREE.MathUtils.clamp(projectedCurrentUp.dot(projectedDesiredUp), -1, 1);
-        const angle = Math.min(this.maxAlignAngle, Math.acos(cosAngle));
-
-        // Determine rotation direction using cross product
-        const cross = new Vector3().crossVectors(projectedCurrentUp, projectedDesiredUp);
-        const sign = Math.sign(cross.dot(objectToCamera));
-
-        // Create rotation quaternion around the objectToCamera axis
-        const rotationQuaternion = new THREE.Quaternion();
-        rotationQuaternion.setFromAxisAngle(objectToCamera, angle * sign);
-
-        // Apply the rotation to the object's orientation
-        this.geometryView.quaternion.multiplyQuaternions(rotationQuaternion, this.geometryView.quaternion);
+        this.sceneService.geometryView.quaternion.multiplyQuaternions(quaternion, this.sceneService.geometryView.quaternion);
     }
 
     /**
@@ -393,11 +335,74 @@ export class ModelViewer {
         }
     }*/
 
+    private alignObjectUpVector(): void {
+        if (!this.sceneService.geometryView)
+            return;
+        // Get world positions
+        const cameraWorldPosition = new Vector3();
+        this.sceneService.mainCamera.getWorldPosition(cameraWorldPosition);
+
+        const objectWorldPosition = new Vector3();
+        this.sceneService.geometryView.getWorldPosition(objectWorldPosition);
+
+        // Calculate the axis from object to camera (rotation axis)
+        const objectToCamera = new Vector3().subVectors(cameraWorldPosition, objectWorldPosition);
+        const distance = objectToCamera.length();
+
+        if (distance < 0.001) return; // Camera too close to object
+
+        objectToCamera.normalize();
+
+        // Get object's current up vector in world space
+        const currentObjectUp = this.desiredUp.clone();
+        currentObjectUp.applyQuaternion(this.sceneService.geometryView.quaternion);
+        currentObjectUp.normalize();
+
+        // Calculate angle between current up and desired up
+        const cosTheta = THREE.MathUtils.clamp(currentObjectUp.dot(this.desiredUp), -1, 1);
+        const angleBetweenUps = Math.acos(cosTheta);
+        if (angleBetweenUps > this.maxAngleToStartAlign) {
+            return;
+        }
+
+        // Project both up vectors onto the plane perpendicular to objectToCamera
+        const projectedCurrentUp = currentObjectUp.clone().sub(
+            objectToCamera.clone().multiplyScalar(currentObjectUp.dot(objectToCamera))
+        ).normalize();
+
+        const projectedDesiredUp = this.desiredUp.clone().sub(
+            objectToCamera.clone().multiplyScalar(this.desiredUp.dot(objectToCamera))
+        ).normalize();
+
+        // Check if projections are valid
+        if (projectedCurrentUp.length() < 0.001 || projectedDesiredUp.length() < 0.001) {
+            return; // Up vectors are parallel to the view axis
+        }
+
+        // Calculate the angle between projected up vectors
+        const cosAngle = THREE.MathUtils.clamp(projectedCurrentUp.dot(projectedDesiredUp), -1, 1);
+        const angle = Math.min(this.maxAlignAngle, Math.acos(cosAngle));
+
+        // Determine rotation direction using cross product
+        const cross = new Vector3().crossVectors(projectedCurrentUp, projectedDesiredUp);
+        const sign = Math.sign(cross.dot(objectToCamera));
+
+        // Create rotation quaternion around the objectToCamera axis
+        const rotationQuaternion = new THREE.Quaternion();
+        rotationQuaternion.setFromAxisAngle(objectToCamera, angle * sign);
+
+        // Apply the rotation to the object's orientation
+        this.sceneService.geometryView.quaternion.multiplyQuaternions(rotationQuaternion, this.sceneService.geometryView.quaternion);
+    }
+
     private zoomModel(): void {
+        if (!this.sceneService.geometryView)
+            return;
+
         const factor = 1.0 + (this.zoomEnd.y - this.zoomStart.y) * this.zoomSpeed;
 
         if (factor !== 1.0 && factor > 0.0) {
-            this.geometryView.scale.multiplyScalar(factor);
+            this.sceneService.geometryView.scale.multiplyScalar(factor);
 
             // Reset the zoom delta
             // Update zoomStart.y to match zoomEnd.y to consume the delta
@@ -409,25 +414,28 @@ export class ModelViewer {
      * Pan the camera based on mouse movement
      */
     private panModel(): void {
+        if (!this.sceneService.geometryView)
+            return;
+
         const deltaX = this.panEnd.x - this.panStart.x;
         const deltaY = this.panEnd.y - this.panStart.y;
 
         if (deltaX !== 0 || deltaY !== 0) {
             // Get camera world position
             const cameraWorldPosition = new Vector3();
-            this.camera.getWorldPosition(cameraWorldPosition);
+            this.sceneService.mainCamera.getWorldPosition(cameraWorldPosition);
 
             // Get object world position
             const objectWorldPosition = new Vector3();
-            this.geometryView.getWorldPosition(objectWorldPosition);
+            this.sceneService.geometryView.getWorldPosition(objectWorldPosition);
 
             // Calculate distance for scaling
             const distance = cameraWorldPosition.distanceTo(objectWorldPosition);
 
             // Get camera right vector (perpendicular to camera direction and up)
             const cameraDirection = new Vector3().subVectors(objectWorldPosition, cameraWorldPosition).normalize();
-            const cameraRight = new Vector3().crossVectors(cameraDirection, this.camera.up).normalize();
-            const cameraUp = this.camera.up.clone().normalize();
+            const cameraRight = new Vector3().crossVectors(cameraDirection, this.sceneService.mainCamera.up).normalize();
+            const cameraUp = this.sceneService.mainCamera.up.clone().normalize();
 
             // Scale pan movement by distance and panSpeed
             const panScale = distance * this.panSpeed * 0.001;
@@ -439,23 +447,10 @@ export class ModelViewer {
 
             // Apply pan to both camera and object
             //this.camera.position.add(panOffset);
-            this.geometryView.position.add(panOffset.multiplyScalar(-1));
+            this.sceneService.geometryView.position.add(panOffset.multiplyScalar(-1));
         }
 
         this.panStart.copy(this.panEnd);
-    }
-
-    /**
-     * Dispose of event listeners
-     */
-    public dispose(): void {
-        this.domElement.removeEventListener('mousedown', this.onMouseDown.bind(this));
-        this.domElement.removeEventListener('mousemove', this.onMouseMove.bind(this));
-        this.domElement.removeEventListener('mouseup', this.onMouseUp.bind(this));
-        this.domElement.removeEventListener('mouseleave', this.onMouseLeave.bind(this));
-        this.domElement.removeEventListener('wheel', this.onMouseWheel.bind(this));
-        window.removeEventListener('keydown', this.onKeyDown.bind(this));
-        window.removeEventListener('keyup', this.onKeyUp.bind(this));
     }
 }
 

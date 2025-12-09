@@ -60,7 +60,7 @@ export class Viewer {
 
         this.drawService.addConstructionToScene(this.construction);
 
-        this.sceneService.prepareModelViewer(construction.geometry);
+        this.sceneService.setGeometryView(construction.geometry.GeometryView!);
     }
 
     // Очистка при уходе со страницы

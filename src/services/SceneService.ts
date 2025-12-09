@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import {type Camera, OrthographicCamera, PerspectiveCamera} from 'three';
 import {DrawService} from "./DrawService.ts";
-import type {IGeometry} from "../types/model/IGeometry.ts";
-import {ModelViewer} from "../types/controls/ModelViewer.ts";
+import {ModelNavigationService} from "../types/controls/ModelNavigationService.ts";
 import {AssertUtils} from "../utils/assert/AssertUtils.ts";
 import type {GeometryView} from "../types/view/GeometryView.ts";
 import {RenderService} from './RenderService.ts';
@@ -11,13 +10,14 @@ import {CameraViewService} from "./camera/CameraViewService.ts";
 export class SceneService {
     public readonly drawService: DrawService;
     public readonly cameraViewService: CameraViewService;
+    public readonly modelNavigationService: ModelNavigationService;
 
-    readonly mainScene: THREE.Scene;
+    public readonly mainScene: THREE.Scene;
     mainCamera!: Camera;
-    readonly uiScene: THREE.Scene;
-    readonly uiCamera: OrthographicCamera;
+    public readonly uiScene: THREE.Scene;
+    public readonly uiCamera: OrthographicCamera;
 
-    private rendererService!: RenderService;
+    rendererService!: RenderService;
     private frustumSize = 40;
 
     canvasElement!: HTMLElement | null;
@@ -45,6 +45,7 @@ export class SceneService {
         this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.uiCamera);
 
         this.rendererService = new RenderService(this);
+        this.modelNavigationService = new ModelNavigationService(this);
 
         this.setupEventListeners();
     }
@@ -53,11 +54,8 @@ export class SceneService {
         this.mainCamera = this.isMainPerspective ? this.mainPerspectiveCamera : this.mainOrthographicCamera;
     }
 
-    public prepareModelViewer(geometry: IGeometry) {
-        AssertUtils.isNotNull(geometry.GeometryView, 'SceneService: GeometryView is null.');
-
-        this.geometryView = geometry.GeometryView;
-        new ModelViewer(this.geometryView!, this.rendererService.domElement, () => this.mainCamera);
+    public setGeometryView(geometryView: GeometryView) {
+        this.geometryView = geometryView;
     }
 
     private updateSizeForContainer(): void {
@@ -142,6 +140,7 @@ export class SceneService {
     }
 
     dispose() {
+        this.modelNavigationService.dispose();
         this.rendererService.dispose();
     }
 
