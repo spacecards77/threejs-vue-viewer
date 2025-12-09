@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {Object3D, Vector3, Vector2, MOUSE, type Camera} from 'three';
+import {type Camera, MOUSE, type Quaternion, Vector2, Vector3} from 'three';
 import type {GeometryView} from "../view/GeometryView.ts";
 
 const STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2 };
@@ -8,6 +8,9 @@ export class ModelViewer {
     private readonly geometryView: GeometryView;
     private domElement: HTMLElement;
     private getCamera: () => Camera;
+    private startPosition: Vector3;
+    private startQuaternion: Quaternion;
+    private startScale: Vector3;
 
     get camera(): Camera {
         return this.getCamera();
@@ -53,27 +56,22 @@ export class ModelViewer {
     private panStart: Vector2 = new Vector2();
     private panEnd: Vector2 = new Vector2();
 
-    constructor(object: GeometryView, domElement: HTMLElement, getCamera: () => THREE.Camera) {
-        this.geometryView = object;
+    constructor(geometryView: GeometryView, domElement: HTMLElement, getCamera: () => THREE.Camera) {
+        this.geometryView = geometryView;
+        this.startPosition = geometryView.position.clone();
+        this.startQuaternion = geometryView.quaternion.clone();
+        this.startScale = geometryView.scale.clone();
+
         this.domElement = domElement;
         this.getCamera = getCamera;
 
         this.setupEventListeners();
     }
 
-    /**
-     * Set the rotation speed
-     * @param speed - The rotation speed multiplier
-     */
-    public setRotationSpeed(speed: number): void {
-        this.rotationSpeed = speed;
-    }
-
-    /**
-     * Get the current rotation speed
-     */
-    public getRotationSpeed(): number {
-        return this.rotationSpeed;
+    public reset(): void {
+        this.geometryView.position.copy(this.startPosition);
+        this.geometryView.quaternion.copy(this.startQuaternion);
+        this.geometryView.scale.copy(this.startScale);
     }
 
     private setupEventListeners(): void {
@@ -245,35 +243,34 @@ export class ModelViewer {
 
     private rotateObject(deltaX: number, deltaY: number): void {
         const objectWorldPosition = new Vector3();
-        this.geometryView.Parent.getWorldPosition(objectWorldPosition);
+        this.geometryView.getWorldPosition(objectWorldPosition);
 
         if (deltaX !== 0) {
             const rotationAngleY = deltaX * this.rotationSpeed;
-            this.rotateAroundWorldAxis(this.geometryView.Parent, this.mouseXMoveRotationAxis, rotationAngleY, objectWorldPosition);
+            this.rotateAroundWorldAxis(this.mouseXMoveRotationAxis, rotationAngleY, objectWorldPosition);
         }
 
         if (deltaY !== 0) {
             const rotationAngleX = deltaY * this.rotationSpeed;
 
-            this.rotateAroundWorldAxis(this.geometryView.Parent, this.mouseYMoveRotationAxis, rotationAngleX, objectWorldPosition);
+            this.rotateAroundWorldAxis(this.mouseYMoveRotationAxis, rotationAngleX, objectWorldPosition);
         }
     }
 
     /**
      * Rotate an object around a world axis
-     * @param object - The object to rotate
      * @param axis - The world axis to rotate around (must be normalized)
      * @param angle - The angle to rotate in radians
      * @param point - The point through which the axis passes
      */
-    private rotateAroundWorldAxis(object: Object3D, axis: Vector3, angle: number, point: Vector3): void {
+    private rotateAroundWorldAxis(axis: Vector3, angle: number, point: Vector3): void {
         // Create a quaternion representing the rotation
         const quaternion = new THREE.Quaternion();
         quaternion.setFromAxisAngle(axis, angle);
 
         // Get the object's world position
         const objectWorldPosition = new Vector3();
-        object.getWorldPosition(objectWorldPosition);
+        this.geometryView.getWorldPosition(objectWorldPosition);
 
         // Calculate the vector from the rotation point to the object
         const offset = objectWorldPosition.sub(point);
@@ -284,19 +281,19 @@ export class ModelViewer {
         // Update object position
         const newPosition = new Vector3().addVectors(point, offset);
 
-        if (object.parent) {
+        if (this.geometryView.parent) {
             // Convert world position to local position
             const parentWorldMatrix = new THREE.Matrix4();
-            parentWorldMatrix.copy(object.parent.matrixWorld);
+            parentWorldMatrix.copy(this.geometryView.parent.matrixWorld);
             const inverseParentMatrix = new THREE.Matrix4();
             inverseParentMatrix.copy(parentWorldMatrix).invert();
             newPosition.applyMatrix4(inverseParentMatrix);
         }
 
-        object.position.copy(newPosition);
+        this.geometryView.position.copy(newPosition);
 
         // Apply the rotation to the object's orientation
-        object.quaternion.multiplyQuaternions(quaternion, object.quaternion);
+        this.geometryView.quaternion.multiplyQuaternions(quaternion, this.geometryView.quaternion);
     }
 
     private alignObjectUpVector(): void {
@@ -305,7 +302,7 @@ export class ModelViewer {
         this.camera.getWorldPosition(cameraWorldPosition);
 
         const objectWorldPosition = new Vector3();
-        this.geometryView.Parent.getWorldPosition(objectWorldPosition);
+        this.geometryView.getWorldPosition(objectWorldPosition);
 
         // Calculate the axis from object to camera (rotation axis)
         const objectToCamera = new Vector3().subVectors(cameraWorldPosition, objectWorldPosition);
@@ -354,7 +351,7 @@ export class ModelViewer {
         rotationQuaternion.setFromAxisAngle(objectToCamera, angle * sign);
 
         // Apply the rotation to the object's orientation
-        this.geometryView.quaternion.multiplyQuaternions(rotationQuaternion, this.geometryView.Parent.quaternion);
+        this.geometryView.quaternion.multiplyQuaternions(rotationQuaternion, this.geometryView.quaternion);
     }
 
     /**
@@ -400,7 +397,7 @@ export class ModelViewer {
         const factor = 1.0 + (this.zoomEnd.y - this.zoomStart.y) * this.zoomSpeed;
 
         if (factor !== 1.0 && factor > 0.0) {
-            this.geometryView.Parent.scale.multiplyScalar(factor);
+            this.geometryView.scale.multiplyScalar(factor);
 
             // Reset the zoom delta
             // Update zoomStart.y to match zoomEnd.y to consume the delta
@@ -422,7 +419,7 @@ export class ModelViewer {
 
             // Get object world position
             const objectWorldPosition = new Vector3();
-            this.geometryView.Parent.getWorldPosition(objectWorldPosition);
+            this.geometryView.getWorldPosition(objectWorldPosition);
 
             // Calculate distance for scaling
             const distance = cameraWorldPosition.distanceTo(objectWorldPosition);
