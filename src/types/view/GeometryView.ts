@@ -4,9 +4,9 @@ import {config} from "../config.ts";
 export class GeometryView {
     private readonly parentGroup: Group;
     public readonly CoordinateBegin: Object3D;
-    private readonly startPosition: Vector3;
-    private readonly startQuaternion: Quaternion;
-    private readonly startScale: Vector3;
+    private startPosition: Vector3;
+    private startQuaternion: Quaternion;
+    private startScale: Vector3;
 
     constructor(scene: Scene, center: Vector3) {
         this.parentGroup = new Group();
@@ -21,6 +21,12 @@ export class GeometryView {
             this.CoordinateBegin.name = "CoordinateBegin";
         this.parentGroup.add(this.CoordinateBegin);
 
+        this.startPosition = this.position.clone();
+        this.startQuaternion = this.quaternion.clone();
+        this.startScale = this.scale.clone();
+    }
+
+    public storeStarting() {
         this.startPosition = this.position.clone();
         this.startQuaternion = this.quaternion.clone();
         this.startScale = this.scale.clone();

@@ -56,6 +56,7 @@ export class DrawService {
             console.log(`Model displayed: ${geometry.members.length} members drawn`);
 
         geometry.GeometryView = this.mainLineService.geometryView;
+        geometry.GeometryView.storeStarting();
     }
 
     private addUiToScene(center: Vector3) {
