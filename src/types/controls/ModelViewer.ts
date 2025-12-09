@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {Object3D, Vector3, Vector2, MOUSE, PerspectiveCamera, OrthographicCamera} from 'three';
+import {Object3D, Vector3, Vector2, MOUSE, PerspectiveCamera, OrthographicCamera, type Camera} from 'three';
 import type {GeometryView} from "../view/GeometryView.ts";
 
 const STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2 };
@@ -7,7 +7,11 @@ const STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2 };
 export class ModelViewer {
     private readonly geometryView: GeometryView;
     private domElement: HTMLElement;
-    private readonly camera: THREE.Camera;
+    private getCamera: () => Camera;
+
+    get camera(): Camera {
+        return this.getCamera();
+    }
 
     // Speeds
     private rotationSpeed: number = 0.002;
@@ -49,10 +53,10 @@ export class ModelViewer {
     private panStart: Vector2 = new Vector2();
     private panEnd: Vector2 = new Vector2();
 
-    constructor(object: GeometryView, domElement: HTMLElement, camera: THREE.Camera) {
+    constructor(object: GeometryView, domElement: HTMLElement, getCamera: () => THREE.Camera) {
         this.geometryView = object;
         this.domElement = domElement;
-        this.camera = camera;
+        this.getCamera = getCamera;
 
         this.setupEventListeners();
     }

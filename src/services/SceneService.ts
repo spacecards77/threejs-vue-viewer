@@ -53,7 +53,7 @@ export class SceneService {
         AssertUtils.isNotNull(geometry.GeometryView, 'SceneService: GeometryView is null.');
 
         this.geometryView = geometry.GeometryView;
-        new ModelViewer(this.geometryView!, this.rendererService.domElement, this.mainCamera);
+        new ModelViewer(this.geometryView!, this.rendererService.domElement, () => this.mainCamera);
     }
 
     public setupCameras(geometry: IGeometry) {
