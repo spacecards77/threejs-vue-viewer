@@ -9,7 +9,7 @@ export class CameraViewService {
     private readonly mainOrthographicCamera: OrthographicCamera;
     private readonly uiCamera: OrthographicCamera;
     private readonly cameraViewParameters: Map<CameraView, CameraViewParameters> = new Map<CameraView, CameraViewParameters>([
-        [CameraView.Isometric, new CameraViewParameters(new Vector3(1, 1, 1), new Vector3(0, 0, -1))],
+        [CameraView.Isometric, new CameraViewParameters(new Vector3(1, 1, -1), new Vector3(0, 0, -1))],
         [CameraView.ReverseYDirection, new CameraViewParameters(new Vector3(0, 1, 0), new Vector3(0, 0, -1))],
     ]);
 
