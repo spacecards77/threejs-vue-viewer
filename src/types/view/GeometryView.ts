@@ -4,6 +4,9 @@ import {config} from "../config.ts";
 export class GeometryView {
     private readonly parentGroup: Group;
     public readonly CoordinateBegin: Object3D;
+    private readonly startPosition: Vector3;
+    private readonly startQuaternion: Quaternion;
+    private readonly startScale: Vector3;
 
     constructor(scene: Scene, center: Vector3) {
         this.parentGroup = new Group();
@@ -17,6 +20,16 @@ export class GeometryView {
         if (config.debugMode)
             this.CoordinateBegin.name = "CoordinateBegin";
         this.parentGroup.add(this.CoordinateBegin);
+
+        this.startPosition = this.position.clone();
+        this.startQuaternion = this.quaternion.clone();
+        this.startScale = this.scale.clone();
+    }
+
+    public restoreStarting() {
+        this.position.copy(this.startPosition);
+        this.quaternion.copy(this.startQuaternion);
+        this.scale.copy(this.startScale);
     }
 
     get position(): Vector3 {
@@ -33,10 +46,6 @@ export class GeometryView {
 
     get parent(): Object3D | null {
         return this.parentGroup.parent;
-    }
-
-    public clear() {
-        this.parentGroup.remove(this.CoordinateBegin);
     }
 
     add(object: Object3D) {

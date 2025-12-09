@@ -40,6 +40,7 @@ export class Viewer {
 
     public setCameraView(cameraView: CameraView): void {
         if (this.construction) {
+            this.construction.geometry.GeometryView!.restoreStarting();
             this.cameraViewService.setCameraView(cameraView, this.construction.geometry);
         }
     }
