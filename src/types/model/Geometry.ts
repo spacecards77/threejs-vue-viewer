@@ -1,9 +1,8 @@
-import * as THREE from 'three';
 import {Member} from './Member';
 import {Node} from './Node';
 import type {IGeometry} from './IGeometry';
-import type {Vector3} from "three";
-import type {GeometryView} from "../view/GeometryView.ts";
+import {Vector3} from "three";
+import {type GeometryView} from "../view/GeometryView.ts";
 
 export interface GeometryJSON {
     //ARCHITECTURE: use type
@@ -16,6 +15,7 @@ export class Geometry implements IGeometry {
     public readonly members: Member[];
     public readonly nodes: Node[];
     private center!: Vector3;
+    private size!: Vector3;
     GeometryView: GeometryView | null = null;
 
     constructor(members: Member[], nodes: Node[]) {
@@ -23,7 +23,7 @@ export class Geometry implements IGeometry {
         this.nodes = nodes;
         this.idToNode = new Map<number, Node>(nodes.map(n => [n.id, n]));
 
-        this.calculateCenter();
+        this.calculateParameters();
     }
 
     static fromJSON(json: GeometryJSON): Geometry {
@@ -32,11 +32,15 @@ export class Geometry implements IGeometry {
         return new Geometry(members, nodes);
     }
 
-    public getCenter(): THREE.Vector3 {
+    public getCenter(): Vector3 {
         return this.center;
     }
 
-    private calculateCenter() {
+    public getSize(): Vector3 {
+        return this.size;
+    }
+
+    private calculateParameters() {
         const minX = Math.min(...this.nodes.map(n => n.x));
         const maxX = Math.max(...this.nodes.map(n => n.x));
         const minY = Math.min(...this.nodes.map(n => n.y));
@@ -44,10 +48,16 @@ export class Geometry implements IGeometry {
         const minZ = Math.min(...this.nodes.map(n => n.z));
         const maxZ = Math.max(...this.nodes.map(n => n.z));
 
-        this.center = new THREE.Vector3(
+        this.center = new Vector3(
             (minX + maxX) / 2,
             (minY + maxY) / 2,
             (minZ + maxZ) / 2,
+        );
+
+        this.size = new Vector3(
+            maxX - minX,
+            maxY - minY,
+            maxZ - minZ,
         );
     }
 }

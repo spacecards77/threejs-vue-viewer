@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import {ref} from 'vue';
 import Viewer from './components/Viewer.vue';
 import openIcon from './assets/openJson.png';
 import perspectiveIcon from './assets/perspectiveView.png';
+import viewInIsometricIcon from './assets/viewInIsometric.png';
+import viewInReverseYDirectionIcon from './assets/viewInReverseYDirection.png';
+import {CameraView} from './services/camera/CameraView.ts';
 
 const sceneRef = ref<InstanceType<typeof Viewer> | null>(null);
 const isPerspectiveView = ref(false);
@@ -10,6 +13,8 @@ const isPerspectiveView = ref(false);
 // Убирание варнинга
 const openIconUrl: string = openIcon;
 const perspectiveIconUrl: string = perspectiveIcon;
+const viewInIsometricIconUrl: string = viewInIsometricIcon;
+const viewInReverseYDirectionUrl: string = viewInReverseYDirectionIcon;
 
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -30,6 +35,13 @@ const togglePerspectiveView = () => {
   isPerspectiveView.value = !isPerspectiveView.value;
   if (sceneRef.value) {
     sceneRef.value.setMainCamera(isPerspectiveView.value);
+  }
+};
+
+
+const setCameraView = (cameraView: CameraView) => {
+  if (sceneRef.value) {
+    sceneRef.value.setCameraView(cameraView);
   }
 };
 </script>
@@ -54,9 +66,24 @@ const togglePerspectiveView = () => {
         class="toolbar-button"
         :class="{ active: isPerspectiveView }"
         @click="togglePerspectiveView"
-        title="Перспективный вид"
+        title="Перспективная камера"
       >
         <img :src="perspectiveIconUrl" alt="Perspective View" class="toolbar-icon" />
+      </button>
+
+      <button
+          class="toolbar-button"
+          title="Изометрический вид"
+          @click="setCameraView(CameraView.Isometric)"
+      >
+        <img :src="viewInIsometricIconUrl" alt="Isometric View" class="toolbar-icon"/>
+      </button>
+      <button
+          class="toolbar-button"
+          title="Вид в обратном направлении Y"
+          @click="setCameraView(CameraView.ReverseYDirection)"
+      >
+        <img :src="viewInReverseYDirectionUrl" alt="Reverse Y Direction View" class="toolbar-icon"/>
       </button>
     </div>
   </div>

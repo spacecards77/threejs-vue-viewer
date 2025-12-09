@@ -38,6 +38,12 @@ export class Viewer {
             this.processConstruction(this.construction);*/
     }
 
+    public setCameraView(cameraView: CameraView): void {
+        if (this.construction) {
+            this.cameraViewService.setCameraView(cameraView, this.construction.geometry);
+        }
+    }
+
     private handleConstructionLoaded = (construction: Construction): void => {
         if (construction) {
             this.processConstruction(construction);

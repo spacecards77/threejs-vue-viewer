@@ -1,7 +1,8 @@
 <!-- src/components/Viewer.vue -->
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import { Viewer } from '../types/Viewer.ts';
+import {onMounted, onUnmounted, ref} from 'vue';
+import {Viewer} from '../types/Viewer.ts';
+import type {CameraView} from "../services/camera/CameraView.ts";
 
 // Ссылка на DOM-элемент <div>
 const containerRef = ref<HTMLElement | null>(null);
@@ -9,24 +10,28 @@ const containerRef = ref<HTMLElement | null>(null);
 // Храним инстанс мира, но НЕ делаем его реактивным
 let viewer: Viewer | null = null;
 
-// Expose method to load file from parent component
 const loadJsonFile = (file: File) => {
   if (viewer) {
     viewer.loadJsonFile(file);
   }
 };
 
-// Expose method to set main camera
 const setMainCamera = (isMainPerspective: boolean) => {
   if (viewer) {
     viewer.setMainCamera(isMainPerspective);
   }
 };
 
-// Expose methods to parent component
+const setCameraView = (cameraView: CameraView) => {
+  if (viewer) {
+    viewer.setCameraView(cameraView);
+  }
+};
+
 defineExpose({
   loadJsonFile,
-  setMainCamera
+  setMainCamera,
+  setCameraView
 });
 
 onMounted(() => {
