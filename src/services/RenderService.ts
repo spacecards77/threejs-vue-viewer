@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { Vector3 } from 'three';
 import type {SceneService} from "./SceneService.ts";
 import {AssertUtils} from "../utils/assert/AssertUtils.ts";
 
@@ -31,8 +30,6 @@ export class RenderService {
 
     private prepareAndStartRender(): void {
         this.renderer.autoClear = false;
-        const coordinateBeginPosition = new Vector3();
-
         const animate = () => {
             this.animationId = requestAnimationFrame(animate);
 
@@ -42,7 +39,7 @@ export class RenderService {
 
             this.renderer.clearDepth();
 
-            this.renderUi(coordinateBeginPosition);
+            this.renderUi();
         };
 
         animate();
@@ -52,14 +49,14 @@ export class RenderService {
         this.renderer.render(this.sceneService.mainScene, this.sceneService.mainCamera);
     }
 
-    private renderUi(coordinateBeginPosition: Vector3) {
+    private renderUi() {
         this.sceneService.uiCamera.position.copy(this.sceneService.mainCamera.position);
         this.sceneService.uiCamera.quaternion.copy(this.sceneService.mainCamera.quaternion);
 
         const geometryView = this.sceneService.geometryView;
         if (geometryView) {
-            geometryView.CoordinateBegin.getWorldPosition(coordinateBeginPosition);
-            this.sceneService.drawService.updateConnectedCoordinateAxes(coordinateBeginPosition, geometryView.quaternion);
+            //geometryView.CoordinateBegin.getWorldPosition(coordinateBeginPosition);
+            //this.sceneService.drawService.updateConnectedCoordinateAxes(coordinateBeginPosition, geometryView.quaternion);
             this.sceneService.drawService.updateStaticCoordinateAxes(geometryView.quaternion);
         }
 

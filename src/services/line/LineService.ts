@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {Color, type Vector3} from 'three';
+import {Color, type Object3D, type Vector3} from 'three';
 import {Line2} from 'three/addons/lines/Line2.js';
 import {LineMaterial} from "three/addons/lines/LineMaterial.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
@@ -37,7 +37,7 @@ export class LineService {
             // --- ВАЖНЫЕ НАСТРОЙКИ ДЛЯ ОТРИСОВКИ ПОВЕРХ ВСЕГО ---
             depthTest: false,   // Отключаем проверку глубины (рисуем сквозь стены)
             depthWrite: false,  // Не записываем этот объект в буфер глубины (хорошая практика для UI)
-            transparent: true   // Обычно нужно, если используются текстуры, но для цветного квадрата тоже не помешает :)
+            transparent: true   // Обычно нужно, если используются текстуры, но для цветного квадрата тоже не помешает
         });
 
         const dot = new THREE.Points(geometry, material);
@@ -55,7 +55,11 @@ export class LineService {
     }
 
     public drawLine(start: THREE.Vector3, end: THREE.Vector3,
-                    options?: { color?: THREE.Color | number, linewidth?: number }
+                    options?: {
+                        color?: THREE.Color | number,
+                        linewidth?: number,
+                        parent?: Object3D
+                    }
     ) {
         //OPTIMIZE: Reuse materials and geometries where possible
         const material = new LineMaterial({
@@ -79,11 +83,18 @@ export class LineService {
                 + ',' + lineCenter.z.toFixed(2) + ')';
 
         this.geometryView.add(line);
+        if (options?.parent) {
+            options.parent.add(line);
+        }
         this.lines.push(line);
     }
 
     drawArrow(start: THREE.Vector3, end: THREE.Vector3,
-              options?: { color?: THREE.Color | number, linewidth?: number }
+              options?: {
+                  color?: THREE.Color | number,
+                  linewidth?: number,
+                  parent?: Object3D
+              }
     ) {
         // Calculate total length and direction
         const direction = new THREE.Vector3().subVectors(end, start);
@@ -118,6 +129,10 @@ export class LineService {
                 + ',' + end.z.toFixed(2) + ')';
 
         this.geometryView.add(cone);
+        if (options?.parent) {
+            options.parent.add(cone);
+        }
+
         this.cones.push(cone);
     }
 

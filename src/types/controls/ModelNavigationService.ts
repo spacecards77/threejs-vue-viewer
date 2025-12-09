@@ -402,7 +402,7 @@ export class ModelNavigationService {
         const factor = 1.0 + (this.zoomEnd.y - this.zoomStart.y) * this.zoomSpeed;
 
         if (factor !== 1.0 && factor > 0.0) {
-            this.sceneService.geometryView.scale.multiplyScalar(factor);
+            this.sceneService.geometryView.setScaleExceptCoordinateAxes(factor);
 
             // Reset the zoom delta
             // Update zoomStart.y to match zoomEnd.y to consume the delta

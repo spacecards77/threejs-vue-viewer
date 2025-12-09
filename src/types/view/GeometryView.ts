@@ -1,9 +1,9 @@
-import {Group, Object3D, type Quaternion, type Scene, type Vector3} from "three";
+import {Group, Object3D, type Quaternion, type Scene, Vector3} from "three";
 import {config} from "../config.ts";
 
 export class GeometryView {
     private readonly parentGroup: Group;
-    public readonly CoordinateBegin: Object3D;
+    public readonly CoordinateBegin: Group;
     private startPosition: Vector3;
     private startQuaternion: Quaternion;
     private startScale: Vector3;
@@ -14,9 +14,8 @@ export class GeometryView {
         if (config.debugMode)
             this.parentGroup.name = 'GroupParent';
 
-        this.CoordinateBegin = new Object3D();
+        this.CoordinateBegin = new Group();
         this.CoordinateBegin.position.copy(center.clone().multiplyScalar(-1));
-        this.CoordinateBegin.visible = false;
         if (config.debugMode)
             this.CoordinateBegin.name = "CoordinateBegin";
         this.parentGroup.add(this.CoordinateBegin);
@@ -44,6 +43,11 @@ export class GeometryView {
 
     get quaternion(): Quaternion {
         return this.parentGroup.quaternion;
+    }
+
+    public setScaleExceptCoordinateAxes(factor: number) {
+        this.scale.multiplyScalar(factor);
+        this.CoordinateBegin.scale.multiplyScalar(1 / factor);
     }
 
     get scale(): Vector3 {

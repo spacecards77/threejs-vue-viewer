@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {type Quaternion, Vector3} from 'three';
+import {type Group, type Quaternion, Vector3} from 'three';
 import {Construction, Geometry} from '../types/model';
 import {LineService} from './line/LineService.ts';
 import {config} from "../types/config.ts";
@@ -24,7 +24,7 @@ export class DrawService {
 
         this.addGeometryToScene(construction.geometry);
 
-        this.addUiToScene(center);
+        this.addUiToScene(center, construction.geometry.GeometryView!.CoordinateBegin!);
     }
 
     private addGeometryToScene(geometry: Geometry) {
@@ -59,8 +59,8 @@ export class DrawService {
         geometry.GeometryView.storeStarting();
     }
 
-    private addUiToScene(center: Vector3) {
-        this.connectedAxesService.drawCoordinateAxesConnected(center, new Vector3());
+    private addUiToScene(center: Vector3, coordinateBegin: Group) {
+        this.connectedAxesService.drawCoordinateAxesConnected(center, coordinateBegin);
         this.staticAxesService.drawCoordinateAxesStatic(new Vector3(
             -.93,
             -0.65,
