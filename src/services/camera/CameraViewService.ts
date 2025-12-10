@@ -44,7 +44,7 @@ export class CameraViewService {
         this.mainOrthographicCamera.updateMatrixWorld(true);
 
         const staticAxesPosition = new Vector3();
-        this.staticAxesCamera.position.copy(staticAxesPosition.clone().add(cameraPositionOffset));
+        this.staticAxesCamera.position.copy(cameraPosition);
         this.staticAxesCamera.up = cameraUp;
         this.staticAxesCamera.lookAt(staticAxesPosition);
         this.staticAxesCamera.updateProjectionMatrix();

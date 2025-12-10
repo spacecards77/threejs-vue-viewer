@@ -15,7 +15,6 @@ export class SceneService {
 
     public readonly mainScene: THREE.Scene;
     mainCamera!: Camera;
-    public readonly staticAxesScene: THREE.Scene;
     public readonly staticAxesCamera: OrthographicCamera;
 
     rendererService!: RenderService;
@@ -39,8 +38,9 @@ export class SceneService {
         this.mainOrthographicCamera = this.createOrthographicCamera(this.frustumSize);
         this.prepareMainCamera();
 
-        this.staticAxesScene = new THREE.Scene();
-        this.staticAxesCamera = this.createOrthographicCamera(config.coordinateAxes.length * 2);
+        const staticAxesCameraFrustumSize = this.frustumSize * config.coordinateAxes.widgetSize / Math.min(this.width, this.height);
+        this.staticAxesCamera = this.createOrthographicCamera(staticAxesCameraFrustumSize, 1);
+        this.staticAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
 
         this.drawService = new DrawService(this);
         this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.staticAxesCamera);
@@ -88,8 +88,8 @@ export class SceneService {
         );
     }
 
-    private createOrthographicCamera(frustumSize: number): OrthographicCamera {
-        const aspect = this.width / this.height;
+    private createOrthographicCamera(frustumSize: number, nonStandardAspect?: number): OrthographicCamera {
+        const aspect = nonStandardAspect ?? this.width / this.height;
 
         return new OrthographicCamera(
             frustumSize * aspect / -2, // left

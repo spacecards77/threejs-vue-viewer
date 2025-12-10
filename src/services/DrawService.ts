@@ -2,18 +2,12 @@ import * as THREE from 'three';
 import {type Quaternion, Vector3} from 'three';
 import {Construction, Geometry} from '../types/model';
 import {config} from "../types/config.ts";
-import {StaticCoordinateAxesService} from "./line/StaticCoordinateAxesService.ts";
 import type {SceneService} from "./SceneService.ts";
 import {MainLineService} from "./line/MainLineService.ts";
 
 export class DrawService {
     private readonly sceneService: SceneService;
     private mainLineService!: MainLineService;
-    private staticAxesService!: StaticCoordinateAxesService;
-
-    get mainGeometryView() {
-        return this.mainLineService.geometryView;
-    }
 
     constructor(sceneService: SceneService) {
         this.sceneService = sceneService;
@@ -70,7 +64,8 @@ export class DrawService {
 
     private addUiToScene() {
         this.mainLineService.drawCoordinateAxes();
-        this.staticAxesService.drawCoordinateAxes();
+        this.mainLineService.geometryView.CoordinateBegin.traverse(
+            child => child.layers.enable(config.coordinateAxes.connectedAxesLayer));
     }
 
     private createServices(center: Vector3) {
@@ -78,11 +73,6 @@ export class DrawService {
             this.mainLineService.clearAllLines();
         }
         this.mainLineService = new MainLineService(this.sceneService.mainScene, center);
-
-        if (this.staticAxesService) {
-            this.staticAxesService.clearAllLines();
-        }
-        this.staticAxesService = new StaticCoordinateAxesService(this.sceneService.staticAxesScene, new Vector3());
     }
 
 }

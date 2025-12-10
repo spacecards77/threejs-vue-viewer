@@ -7,6 +7,7 @@ export const config = {
         length: 1.5,
         lineWidth: 3,
         widgetSize: 150,
-        widgetMargin: 20
+        widgetMargin: 20,
+        connectedAxesLayer: 1,
     }
 };

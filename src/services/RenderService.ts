@@ -1,5 +1,5 @@
-import type {Quaternion} from "three";
-import * as THREE from 'three';
+import * as THREE from "three";
+import {Vector3} from "three";
 import type {SceneService} from "./SceneService.ts";
 import {AssertUtils} from "../utils/assert/AssertUtils.ts";
 import {config} from "../types/config.ts";
@@ -8,7 +8,7 @@ export class RenderService {
     private renderer!: THREE.WebGLRenderer;
     private sceneService: SceneService;
     private animationId: number = 0;
-    private coordinateBeginGlobalQuaternion: Quaternion = new THREE.Quaternion();
+    private coordinateBeginGlobalPosition: Vector3 = new Vector3();
 
     constructor(sceneService: SceneService
     ) {
@@ -61,12 +61,12 @@ export class RenderService {
         if (geometryView) {
             const widgetMargin = config.coordinateAxes.widgetMargin;
             const widgetSize = config.coordinateAxes.widgetSize;
-            geometryView.CoordinateBegin.getWorldQuaternion(this.coordinateBeginGlobalQuaternion)
-            this.sceneService.drawService.updateStaticCoordinateAxes(this.coordinateBeginGlobalQuaternion);
+            geometryView.CoordinateBegin.getWorldPosition(this.coordinateBeginGlobalPosition)
+            this.sceneService.staticAxesCamera.lookAt(this.coordinateBeginGlobalPosition);
 
             this.renderer.setViewport(widgetMargin, widgetMargin, widgetSize, widgetSize);
             this.renderer.setScissor(widgetMargin, widgetMargin, widgetSize, widgetSize);
-            this.renderer.render(this.sceneService.staticAxesScene, this.sceneService.staticAxesCamera);
+            this.renderer.render(this.sceneService.mainScene, this.sceneService.staticAxesCamera);
         }
     }
 
