@@ -15,7 +15,8 @@ export class GeometryView {
             this.parentGroup.name = 'GroupParent';
 
         this.CoordinateBegin = new Group();
-        this.CoordinateBegin.position.copy(center.clone().multiplyScalar(-1));
+        const coordinateBeginPosition = new Vector3();
+        this.CoordinateBegin.position.copy(coordinateBeginPosition.clone().sub(center));
         if (config.debugMode)
             this.CoordinateBegin.name = "CoordinateBegin";
         this.parentGroup.add(this.CoordinateBegin);
