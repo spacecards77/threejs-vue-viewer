@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {type Quaternion, Vector3} from 'three';
+import {Vector3} from 'three';
 import {Construction, Geometry} from '../types/model';
 import {config} from "../types/config.ts";
 import type {SceneService} from "./SceneService.ts";
@@ -56,16 +56,12 @@ export class DrawService {
         geometry.GeometryView.storeStarting();
     }
 
-    public updateStaticCoordinateAxes(coordinateBeginGlobalQuaternion: Quaternion) {
-        // @ts-ignore
-        // Обновляем только поворот, позиция статичных осей не меняется
-        this.staticAxesService.updateCoordinateAxes(coordinateBeginGlobalQuaternion);
-    }
-
     private addUiToScene() {
         this.mainLineService.drawCoordinateAxes();
         this.mainLineService.geometryView.CoordinateBegin.traverse(
             child => child.layers.enable(config.coordinateAxes.connectedAxesLayer));
+
+
     }
 
     private createServices(center: Vector3) {

@@ -43,10 +43,9 @@ export class CameraViewService {
         this.mainOrthographicCamera.updateProjectionMatrix();
         this.mainOrthographicCamera.updateMatrixWorld(true);
 
-        const staticAxesPosition = new Vector3();
         this.staticAxesCamera.position.copy(cameraPosition);
         this.staticAxesCamera.up = cameraUp;
-        this.staticAxesCamera.lookAt(staticAxesPosition);
+        this.staticAxesCamera.lookAt(center);
         this.staticAxesCamera.updateProjectionMatrix();
         this.staticAxesCamera.updateMatrixWorld(true);
     }

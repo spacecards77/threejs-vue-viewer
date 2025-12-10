@@ -8,7 +8,8 @@ export class RenderService {
     private renderer!: THREE.WebGLRenderer;
     private sceneService: SceneService;
     private animationId: number = 0;
-    private coordinateBeginGlobalPosition: Vector3 = new Vector3();
+    private coordinateAxesPosition: Vector3 = new Vector3();
+    private screenPos: Vector3 = new Vector3();
 
     constructor(sceneService: SceneService
     ) {
@@ -33,16 +34,16 @@ export class RenderService {
 
     private prepareAndStartRender(): void {
         this.renderer.autoClear = false;
-        this.renderer.setScissorTest(true);
+        //this.renderer.setScissorTest(true);
 
         const animate = () => {
             this.animationId = requestAnimationFrame(animate);
 
-            this.renderer.clear();
+            //this.renderer.clear();
 
             this.renderMain();
 
-            this.renderer.clearDepth();
+            //this.renderer.clearDepth();
 
             this.renderStaticAxes();
         };
@@ -52,22 +53,47 @@ export class RenderService {
 
     private renderMain() {
         this.renderer.setViewport(0, 0, this.sceneService.width, this.sceneService.height);
-        this.renderer.setScissor(0, 0, this.sceneService.width, this.sceneService.height);
+        this.renderer.setScissorTest(false);
+        this.renderer.clear();
+        this.sceneService.mainCamera.layers.set(0);
         this.renderer.render(this.sceneService.mainScene, this.sceneService.mainCamera);
     }
 
     private renderStaticAxes() {
-        const geometryView = this.sceneService.geometryView;
-        if (geometryView) {
-            const widgetMargin = config.coordinateAxes.widgetMargin;
-            const widgetSize = config.coordinateAxes.widgetSize;
-            geometryView.CoordinateBegin.getWorldPosition(this.coordinateBeginGlobalPosition)
-            this.sceneService.staticAxesCamera.lookAt(this.coordinateBeginGlobalPosition);
+        const widgetMargin = config.coordinateAxes.widgetMargin;
+        const widgetSize = config.coordinateAxes.widgetSize;
 
-            this.renderer.setViewport(widgetMargin, widgetMargin, widgetSize, widgetSize);
-            this.renderer.setScissor(widgetMargin, widgetMargin, widgetSize, widgetSize);
-            this.renderer.render(this.sceneService.mainScene, this.sceneService.staticAxesCamera);
+        if (!this.sceneService.geometryView) {
+            return;
         }
+
+        this.sceneService.geometryView.CoordinateBegin.getWorldPosition(this.coordinateAxesPosition);
+        this.sceneService.staticAxesCamera.clearViewOffset();
+        this.screenPos.copy(this.coordinateAxesPosition).project(this.sceneService.staticAxesCamera);
+        // 4. Переводим из NDC (-1..+1) в пиксельные координаты экрана (0..width)
+        const x = (this.screenPos.x * 0.5 + 0.5) * this.sceneService.width;
+        const y = (-(this.screenPos.y * 0.5) + 0.5) * this.sceneService.height; // Y инвертирован в WebGL относительно CSS
+
+        // 5. Вычисляем смещение для setViewOffset
+        // Мы хотим, чтобы точка (x,y) стала центром нашего PIP окна.
+        // setViewOffset(fullWidth, fullHeight, xOffset, yOffset, width, height)
+        // xOffset и yOffset - это координата левого верхнего угла "выреза" на виртуальном экране.
+
+        const viewX = x - config.coordinateAxes.widgetSize / 2;
+        const viewY = y - config.coordinateAxes.widgetSize / 2;
+
+        // "Магия": мы говорим камере рендерить так, как будто экран огромный (width x height),
+        // но вырезать из него только кусочек (pipWidth x pipHeight), начиная с координат viewX, viewY.
+        this.sceneService.staticAxesCamera.setViewOffset(this.sceneService.width, this.sceneService.height,
+            viewX, viewY, config.coordinateAxes.widgetSize, config.coordinateAxes.widgetSize);
+
+        this.renderer.setViewport(widgetMargin, widgetMargin, widgetSize, widgetSize);
+        this.renderer.setScissor(widgetMargin, widgetMargin, widgetSize, widgetSize);
+        this.renderer.setScissorTest(true);
+        this.renderer.clearDepth();
+
+        this.sceneService.staticAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
+        this.renderer.render(this.sceneService.mainScene, this.sceneService.staticAxesCamera);
     }
 
     dispose() {

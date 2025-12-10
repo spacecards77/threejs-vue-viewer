@@ -38,8 +38,7 @@ export class SceneService {
         this.mainOrthographicCamera = this.createOrthographicCamera(this.frustumSize);
         this.prepareMainCamera();
 
-        const staticAxesCameraFrustumSize = this.frustumSize * config.coordinateAxes.widgetSize / Math.min(this.width, this.height);
-        this.staticAxesCamera = this.createOrthographicCamera(staticAxesCameraFrustumSize, 1);
+        this.staticAxesCamera = this.createOrthographicCamera(this.frustumSize);
         this.staticAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
 
         this.drawService = new DrawService(this);
