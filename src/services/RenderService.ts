@@ -1,11 +1,14 @@
+import type {Quaternion} from "three";
 import * as THREE from 'three';
 import type {SceneService} from "./SceneService.ts";
 import {AssertUtils} from "../utils/assert/AssertUtils.ts";
+import {config} from "../types/config.ts";
 
 export class RenderService {
     private renderer!: THREE.WebGLRenderer;
     private sceneService: SceneService;
     private animationId: number = 0;
+    private coordinateBeginGlobalQuaternion: Quaternion = new THREE.Quaternion();
 
     constructor(sceneService: SceneService
     ) {
@@ -30,6 +33,8 @@ export class RenderService {
 
     private prepareAndStartRender(): void {
         this.renderer.autoClear = false;
+        this.renderer.setScissorTest(true);
+
         const animate = () => {
             this.animationId = requestAnimationFrame(animate);
 
@@ -39,28 +44,30 @@ export class RenderService {
 
             this.renderer.clearDepth();
 
-            this.renderUi();
+            this.renderStaticAxes();
         };
 
         animate();
     }
 
     private renderMain() {
+        this.renderer.setViewport(0, 0, this.sceneService.width, this.sceneService.height);
+        this.renderer.setScissor(0, 0, this.sceneService.width, this.sceneService.height);
         this.renderer.render(this.sceneService.mainScene, this.sceneService.mainCamera);
     }
 
-    private renderUi() {
-        this.sceneService.uiCamera.position.copy(this.sceneService.mainCamera.position);
-        this.sceneService.uiCamera.quaternion.copy(this.sceneService.mainCamera.quaternion);
-
+    private renderStaticAxes() {
         const geometryView = this.sceneService.geometryView;
         if (geometryView) {
-            //geometryView.CoordinateBegin.getWorldPosition(coordinateBeginPosition);
-            //this.sceneService.drawService.updateConnectedCoordinateAxes(coordinateBeginPosition, geometryView.quaternion);
-            this.sceneService.drawService.updateStaticCoordinateAxes(geometryView.quaternion);
-        }
+            const widgetMargin = config.coordinateAxes.widgetMargin;
+            const widgetSize = config.coordinateAxes.widgetSize;
+            geometryView.CoordinateBegin.getWorldQuaternion(this.coordinateBeginGlobalQuaternion)
+            this.sceneService.drawService.updateStaticCoordinateAxes(this.coordinateBeginGlobalQuaternion);
 
-        this.renderer.render(this.sceneService.uiScene, this.sceneService.uiCamera);
+            this.renderer.setViewport(widgetMargin, widgetMargin, widgetSize, widgetSize);
+            this.renderer.setScissor(widgetMargin, widgetMargin, widgetSize, widgetSize);
+            this.renderer.render(this.sceneService.staticAxesScene, this.sceneService.staticAxesCamera);
+        }
     }
 
     dispose() {

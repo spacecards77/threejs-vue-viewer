@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {Color, type Object3D, type Vector3} from 'three';
+import {Color, type Object3D, Vector3} from 'three';
 import {Line2} from 'three/addons/lines/Line2.js';
 import {LineMaterial} from "three/addons/lines/LineMaterial.js";
 import {LineGeometry} from "three/addons/lines/LineGeometry.js";
@@ -20,7 +20,7 @@ export class LineService {
         this.geometryView = new GeometryView(this.scene, center);
     }
 
-    public drawSquare(position: THREE.Vector3,
+    public drawSquare(position: Vector3,
                       options: { color?: THREE.Color | number, size: number }
     ) {
         const geometry = new THREE.BufferGeometry();
@@ -54,7 +54,7 @@ export class LineService {
         this.dots.push(dot);
     }
 
-    public drawLine(start: THREE.Vector3, end: THREE.Vector3,
+    public drawLine(start: Vector3, end: Vector3,
                     options?: {
                         color?: THREE.Color | number,
                         linewidth?: number,
@@ -75,21 +75,22 @@ export class LineService {
         const col = new Color(options?.color ?? 0x0000ff);
         geometry.setColors([col.r, col.g, col.b, col.r, col.g, col.b]);
         const line = new Line2(geometry, material);
-        const lineCenter = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+        const lineCenter = new Vector3().addVectors(start, end).multiplyScalar(0.5);
 
         if (config.debugMode)
             line.name = 'Line' + '(' + lineCenter.x.toFixed(2) + ','
                 + lineCenter.y.toFixed(2)
                 + ',' + lineCenter.z.toFixed(2) + ')';
 
-        this.geometryView.add(line);
         if (options?.parent) {
             options.parent.add(line);
+        } else {
+            this.geometryView.add(line);
         }
         this.lines.push(line);
     }
 
-    drawArrow(start: THREE.Vector3, end: THREE.Vector3,
+    drawArrow(start: Vector3, end: Vector3,
               options?: {
                   color?: THREE.Color | number,
                   linewidth?: number,
@@ -97,7 +98,7 @@ export class LineService {
               }
     ) {
         // Calculate total length and direction
-        const direction = new THREE.Vector3().subVectors(end, start);
+        const direction = new Vector3().subVectors(end, start);
         //const totalLength = direction.length();
         direction.normalize();
 
@@ -119,7 +120,7 @@ export class LineService {
 
         // Align cone with the direction vector
         // Create a quaternion to rotate from default up (0,1,0) to our direction
-        const up = new THREE.Vector3(0, 1, 0);
+        const up = new Vector3(0, 1, 0);
         const quaternion = new THREE.Quaternion().setFromUnitVectors(up, direction);
         cone.setRotationFromQuaternion(quaternion);
 
@@ -128,12 +129,26 @@ export class LineService {
                 + end.y.toFixed(2)
                 + ',' + end.z.toFixed(2) + ')';
 
-        this.geometryView.add(cone);
         if (options?.parent) {
             options.parent.add(cone);
+        } else {
+            this.geometryView.add(cone);
         }
 
         this.cones.push(cone);
+    }
+
+    public drawCoordinateAxes() {
+        const start = new Vector3().sub(this.geometryView.CoordinateBegin.position);
+        const coordinateBegin = this.geometryView.CoordinateBegin;
+        let linewidth = config.coordinateAxes.lineWidth;
+        let length = config.coordinateAxes.length;
+        this.drawArrow(start, new Vector3(start.x + length, start.y, start.z),
+            {color: 0xBA0000, linewidth: linewidth, parent: coordinateBegin}); // X - Red
+        this.drawArrow(start, new Vector3(start.x, start.y + length, start.z),
+            {color: 0x00C500, linewidth: linewidth, parent: coordinateBegin}); // Y - Green
+        this.drawArrow(start, new Vector3(start.x, start.y, start.z + length),
+            {color: 0x00FFFF, linewidth: linewidth, parent: coordinateBegin}); // Z - Blue
     }
 
     clearAllLines(): void {

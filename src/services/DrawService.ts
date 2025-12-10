@@ -2,14 +2,18 @@ import * as THREE from 'three';
 import {type Quaternion, Vector3} from 'three';
 import {Construction, Geometry} from '../types/model';
 import {config} from "../types/config.ts";
-import {CoordinateAxesService} from "./line/CoordinateAxesService.ts";
+import {StaticCoordinateAxesService} from "./line/StaticCoordinateAxesService.ts";
 import type {SceneService} from "./SceneService.ts";
 import {MainLineService} from "./line/MainLineService.ts";
 
 export class DrawService {
     private readonly sceneService: SceneService;
     private mainLineService!: MainLineService;
-    private staticAxesService!: CoordinateAxesService;
+    private staticAxesService!: StaticCoordinateAxesService;
+
+    get mainGeometryView() {
+        return this.mainLineService.geometryView;
+    }
 
     constructor(sceneService: SceneService) {
         this.sceneService = sceneService;
@@ -58,19 +62,15 @@ export class DrawService {
         geometry.GeometryView.storeStarting();
     }
 
-    private addUiToScene() {
-        this.mainLineService.drawCoordinateAxesConnected();
-        this.staticAxesService.drawCoordinateAxesStatic(new Vector3(
-            -.93,
-            -0.65,
-            -0.9,
-        ));
-    }
-
-    public updateStaticCoordinateAxes(parentQuaternion: Quaternion) {
+    public updateStaticCoordinateAxes(coordinateBeginGlobalQuaternion: Quaternion) {
         // @ts-ignore
         // Обновляем только поворот, позиция статичных осей не меняется
-        this.staticAxesService.updateCoordinateAxes(parentQuaternion);
+        this.staticAxesService.updateCoordinateAxes(coordinateBeginGlobalQuaternion);
+    }
+
+    private addUiToScene() {
+        this.mainLineService.drawCoordinateAxes();
+        this.staticAxesService.drawCoordinateAxes();
     }
 
     private createServices(center: Vector3) {
@@ -82,8 +82,7 @@ export class DrawService {
         if (this.staticAxesService) {
             this.staticAxesService.clearAllLines();
         }
-        this.staticAxesService = new CoordinateAxesService(this.sceneService.uiScene, center, () => this.sceneService.mainCamera, this.sceneService.uiCamera);
-
+        this.staticAxesService = new StaticCoordinateAxesService(this.sceneService.staticAxesScene, new Vector3());
     }
 
 }

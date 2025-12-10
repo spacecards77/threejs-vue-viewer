@@ -7,17 +7,17 @@ import {AssertUtils} from "../../utils/assert/AssertUtils.ts";
 export class CameraViewService {
     private readonly mainPerspectiveCamera: PerspectiveCamera;
     private readonly mainOrthographicCamera: OrthographicCamera;
-    private readonly uiCamera: OrthographicCamera;
+    private readonly staticAxesCamera: OrthographicCamera;
     private readonly cameraViewParameters: Map<CameraView, CameraViewParameters> = new Map<CameraView, CameraViewParameters>([
         [CameraView.Isometric, new CameraViewParameters(new Vector3(1, 1, -1), new Vector3(0, 0, -1))],
         [CameraView.ReverseYDirection, new CameraViewParameters(new Vector3(0, 1, 0), new Vector3(0, 0, -1))],
     ]);
 
 
-    constructor(mainPerspectiveCamera: PerspectiveCamera, mainOrthographicCamera: OrthographicCamera, uiCamera: OrthographicCamera) {
+    constructor(mainPerspectiveCamera: PerspectiveCamera, mainOrthographicCamera: OrthographicCamera, staticAxesCamera: OrthographicCamera) {
         this.mainPerspectiveCamera = mainPerspectiveCamera;
         this.mainOrthographicCamera = mainOrthographicCamera;
-        this.uiCamera = uiCamera;
+        this.staticAxesCamera = staticAxesCamera;
     }
 
     public setCameraView(cameraView: CameraView, geometry: IGeometry): void {
@@ -43,9 +43,11 @@ export class CameraViewService {
         this.mainOrthographicCamera.updateProjectionMatrix();
         this.mainOrthographicCamera.updateMatrixWorld(true);
 
-        this.uiCamera.position.copy(this.mainOrthographicCamera.position);
-        this.uiCamera.quaternion.copy(this.mainOrthographicCamera.quaternion);
-        this.uiCamera.updateProjectionMatrix();
-        this.uiCamera.updateMatrixWorld(true);
+        const staticAxesPosition = new Vector3();
+        this.staticAxesCamera.position.copy(staticAxesPosition.clone().add(cameraPositionOffset));
+        this.staticAxesCamera.up = cameraUp;
+        this.staticAxesCamera.lookAt(staticAxesPosition);
+        this.staticAxesCamera.updateProjectionMatrix();
+        this.staticAxesCamera.updateMatrixWorld(true);
     }
 }

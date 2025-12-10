@@ -6,6 +6,7 @@ import {AssertUtils} from "../utils/assert/AssertUtils.ts";
 import type {GeometryView} from "../types/view/GeometryView.ts";
 import {RenderService} from './RenderService.ts';
 import {CameraViewService} from "./camera/CameraViewService.ts";
+import {config} from "../types/config.ts";
 
 export class SceneService {
     public readonly drawService: DrawService;
@@ -14,8 +15,8 @@ export class SceneService {
 
     public readonly mainScene: THREE.Scene;
     mainCamera!: Camera;
-    public readonly uiScene: THREE.Scene;
-    public readonly uiCamera: OrthographicCamera;
+    public readonly staticAxesScene: THREE.Scene;
+    public readonly staticAxesCamera: OrthographicCamera;
 
     rendererService!: RenderService;
     private frustumSize = 40;
@@ -35,14 +36,14 @@ export class SceneService {
         this.mainScene = this.createMainScene();
 
         this.mainPerspectiveCamera = this.createPerspectiveCamera();
-        this.mainOrthographicCamera = this.createOrthographicCamera();
+        this.mainOrthographicCamera = this.createOrthographicCamera(this.frustumSize);
         this.prepareMainCamera();
 
-        this.uiScene = this.createUiScene();
-        this.uiCamera = this.createOrthographicCamera();
+        this.staticAxesScene = new THREE.Scene();
+        this.staticAxesCamera = this.createOrthographicCamera(config.coordinateAxes.length * 2);
 
         this.drawService = new DrawService(this);
-        this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.uiCamera);
+        this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.staticAxesCamera);
 
         this.rendererService = new RenderService(this);
         this.modelNavigationService = new ModelNavigationService(this);
@@ -76,11 +77,6 @@ export class SceneService {
 
         return scene;
     }
-
-    private createUiScene(): THREE.Scene {
-        return new THREE.Scene();
-    }
-
     private createPerspectiveCamera(): PerspectiveCamera {
         const aspect = this.width / this.height;
 
@@ -92,14 +88,14 @@ export class SceneService {
         );
     }
 
-    private createOrthographicCamera(): OrthographicCamera {
+    private createOrthographicCamera(frustumSize: number): OrthographicCamera {
         const aspect = this.width / this.height;
 
         return new OrthographicCamera(
-            this.frustumSize * aspect / -2, // left
-            this.frustumSize * aspect / 2,  // right
-            this.frustumSize / 2,           // top
-            this.frustumSize / -2,          // bottom
+            frustumSize * aspect / -2, // left
+            frustumSize * aspect / 2,  // right
+            frustumSize / 2,           // top
+            frustumSize / -2,          // bottom
             0.1,                       // near
             1000                        // far
         );
@@ -129,11 +125,11 @@ export class SceneService {
             this.mainPerspectiveCamera.aspect = aspect;
             this.mainPerspectiveCamera.updateProjectionMatrix();
 
-            this.uiCamera.left = this.frustumSize * aspect / -2;
-            this.uiCamera.right = this.frustumSize * aspect / 2;
-            this.uiCamera.top = this.frustumSize / 2;
-            this.uiCamera.bottom = this.frustumSize / -2;
-            this.uiCamera.updateProjectionMatrix();
+            this.staticAxesCamera.left = this.frustumSize * aspect / -2;
+            this.staticAxesCamera.right = this.frustumSize * aspect / 2;
+            this.staticAxesCamera.top = this.frustumSize / 2;
+            this.staticAxesCamera.bottom = this.frustumSize / -2;
+            this.staticAxesCamera.updateProjectionMatrix();
 
             this.rendererService.setSize(this.width, this.height);
         });
