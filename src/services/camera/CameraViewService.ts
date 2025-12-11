@@ -25,7 +25,7 @@ export class CameraViewService {
             'Camera view parameters not found for camera view: {0}', cameraView);
 
         const center = geometry.getCenter();
-        const size = geometry.getSize();
+        const size = geometry.getBox();
         const cameraDistance = Math.max(size.x, size.y, size.z) * 1.5;
         const cameraPositionOffset = this.cameraViewParameters.get(cameraView)!.backward.clone().normalize().multiplyScalar(cameraDistance);
         const cameraPosition = center.clone().add(cameraPositionOffset);

@@ -5,7 +5,7 @@ import {Vector3} from "three";
 import {type GeometryView} from "../view/GeometryView.ts";
 
 export interface GeometryJSON {
-    //ARCHITECTURE: use type
+    //ARCHITECTURE: use exact type
     Members: any[];
     Nodes: any[];
 }
@@ -14,8 +14,9 @@ export class Geometry implements IGeometry {
     public readonly idToNode: Map<number, Node>;
     public readonly members: Member[];
     public readonly nodes: Node[];
-    private center!: Vector3;
-    private size!: Vector3;
+    private readonly center: Vector3;
+    private readonly box: Vector3;
+    private readonly maxRadius: number;
     GeometryView: GeometryView | null = null;
 
     constructor(members: Member[], nodes: Node[]) {
@@ -23,7 +24,10 @@ export class Geometry implements IGeometry {
         this.nodes = nodes;
         this.idToNode = new Map<number, Node>(nodes.map(n => [n.id, n]));
 
-        this.calculateParameters();
+        const params = Geometry.computeParameters(nodes);
+        this.center = params.center;
+        this.box = params.box;
+        this.maxRadius = params.maxRadius;
     }
 
     static fromJSON(json: GeometryJSON): Geometry {
@@ -36,28 +40,42 @@ export class Geometry implements IGeometry {
         return this.center;
     }
 
-    public getSize(): Vector3 {
-        return this.size;
-    }
+    // compute parameters from nodes; kept static so assignments occur in constructor
+    private static computeParameters(nodes: Node[]): { center: Vector3; box: Vector3; maxRadius: number } {
+        if (!nodes || nodes.length === 0) {
+            const zero = new Vector3(0, 0, 0);
+            return {center: zero, box: zero, maxRadius: 0};
+        }
 
-    private calculateParameters() {
-        const minX = Math.min(...this.nodes.map(n => n.x));
-        const maxX = Math.max(...this.nodes.map(n => n.x));
-        const minY = Math.min(...this.nodes.map(n => n.y));
-        const maxY = Math.max(...this.nodes.map(n => n.y));
-        const minZ = Math.min(...this.nodes.map(n => n.z));
-        const maxZ = Math.max(...this.nodes.map(n => n.z));
+        const minX = Math.min(...nodes.map(n => n.x));
+        const maxX = Math.max(...nodes.map(n => n.x));
+        const minY = Math.min(...nodes.map(n => n.y));
+        const maxY = Math.max(...nodes.map(n => n.y));
+        const minZ = Math.min(...nodes.map(n => n.z));
+        const maxZ = Math.max(...nodes.map(n => n.z));
 
-        this.center = new Vector3(
+        const center = new Vector3(
             (minX + maxX) / 2,
             (minY + maxY) / 2,
             (minZ + maxZ) / 2,
         );
 
-        this.size = new Vector3(
+        const box = new Vector3(
             maxX - minX,
             maxY - minY,
             maxZ - minZ,
         );
+
+        const maxRadius = Math.hypot(box.x, box.y, box.z) / 2;
+
+        return {center, box, maxRadius};
+    }
+
+    public getBox(): Vector3 {
+        return this.box;
+    }
+
+    public getMaxRadius(): number {
+        return this.maxRadius;
     }
 }

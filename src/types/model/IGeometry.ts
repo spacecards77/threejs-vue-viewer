@@ -6,6 +6,7 @@ export interface IGeometry {
 
     getCenter(): Vector3;
 
-    getSize(): Vector3;
-}
+    getBox(): Vector3;
 
+    getMaxRadius(): number;
+}
