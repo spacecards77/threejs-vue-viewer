@@ -58,7 +58,7 @@ export class DrawService {
 
     private addUiToScene() {
         this.mainLineService.drawCoordinateAxes();
-        this.mainLineService.geometryView.CoordinateBegin.traverse(
+        this.mainLineService.geometryView.coordinateBegin.traverse(
             child => child.layers.enable(config.coordinateAxes.connectedAxesLayer));
 
 

@@ -3,7 +3,7 @@ import {config} from "../config.ts";
 
 export class GeometryView {
     private readonly parentGroup: Group;
-    public readonly CoordinateBegin: Group;
+    public readonly coordinateBegin: Group;
     private startPosition: Vector3;
     private startQuaternion: Quaternion;
     private startScaleFactor: number;
@@ -16,12 +16,12 @@ export class GeometryView {
         if (config.debugMode)
             this.parentGroup.name = 'GroupParent';
 
-        this.CoordinateBegin = new Group();
+        this.coordinateBegin = new Group();
         const coordinateBeginPosition = new Vector3();
-        this.CoordinateBegin.position.copy(coordinateBeginPosition.clone().sub(center));
+        this.coordinateBegin.position.copy(coordinateBeginPosition.clone().sub(center));
         if (config.debugMode)
-            this.CoordinateBegin.name = "CoordinateBegin";
-        this.parentGroup.add(this.CoordinateBegin);
+            this.coordinateBegin.name = "CoordinateBegin";
+        this.parentGroup.add(this.coordinateBegin);
 
         this.startPosition = this.position.clone();
         this.startQuaternion = this.quaternion.clone();
@@ -49,7 +49,7 @@ export class GeometryView {
 
     public setScaleExceptCoordinateAxes(factor: number) {
         this.scale.multiplyScalar(factor);
-        this.CoordinateBegin.scale.multiplyScalar(1 / factor);
+        this.coordinateBegin.scale.multiplyScalar(1 / factor);
     }
 
     public restoreStarting() {
@@ -77,7 +77,7 @@ export class GeometryView {
     dispose() {
         // Рекурсивно очищаем все дочерние объекты
         this.parentGroup.traverse((object) => {
-            if (object !== this.parentGroup && object !== this.CoordinateBegin) {
+            if (object !== this.parentGroup && object !== this.coordinateBegin) {
                 // Очищаем геометрию
                 if ('geometry' in object && object.geometry) {
                     (object.geometry as any).dispose();

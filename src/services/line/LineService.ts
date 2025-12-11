@@ -139,8 +139,8 @@ export class LineService {
     }
 
     public drawCoordinateAxes() {
-        const start = new Vector3().sub(this.geometryView.CoordinateBegin.position);
-        const coordinateBegin = this.geometryView.CoordinateBegin;
+        const start = new Vector3().sub(this.geometryView.coordinateBegin.position);
+        const coordinateBegin = this.geometryView.coordinateBegin;
         let linewidth = config.coordinateAxes.lineWidth;
         let length = config.coordinateAxes.length;
         this.drawArrow(start, new Vector3(start.x + length, start.y, start.z),

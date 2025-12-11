@@ -75,7 +75,7 @@ export class RenderService {
     }
 
     private setSeparateAxesCameraViewOffset() {
-        this.sceneService.geometryView.CoordinateBegin.getWorldPosition(this.coordinateAxesPosition);
+        this.sceneService.geometryView.coordinateBegin.getWorldPosition(this.coordinateAxesPosition);
         this.sceneService.separateAxesCamera.clearViewOffset();
         this.screenPos.copy(this.coordinateAxesPosition).project(this.sceneService.separateAxesCamera);
         // Переводим из NDC (-1..+1) в пиксельные координаты экрана (0..width)
