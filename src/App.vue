@@ -72,6 +72,17 @@ const setCameraView = (cameraView: CameraView) => {
           @change="handleFileChange"
         />
       </label>
+
+      <div class="toolbar-separator"></div>
+
+      <button
+          class="toolbar-button"
+          title="Изометрический вид"
+          @click="setCameraView(CameraView.Isometric)"
+      >
+        <img :src="viewInIsometricIconUrl" alt="Isometric View" class="toolbar-icon"/>
+      </button>
+
       <button
         class="toolbar-button"
         :class="{ active: isPerspectiveView }"
@@ -81,13 +92,7 @@ const setCameraView = (cameraView: CameraView) => {
         <img :src="perspectiveIconUrl" alt="Perspective View" class="toolbar-icon" />
       </button>
 
-      <button
-          class="toolbar-button"
-          title="Изометрический вид"
-          @click="setCameraView(CameraView.Isometric)"
-      >
-        <img :src="viewInIsometricIconUrl" alt="Isometric View" class="toolbar-icon"/>
-      </button>
+      <div class="toolbar-separator"></div>
 
       <button
           class="toolbar-button"
@@ -110,6 +115,8 @@ const setCameraView = (cameraView: CameraView) => {
       >
         <img :src="viewInZDirectionUrl" alt="Z Direction View" class="toolbar-icon"/>
       </button>
+
+      <div class="toolbar-separator"></div>
 
       <button
           class="toolbar-button"
@@ -184,5 +191,12 @@ const setCameraView = (cameraView: CameraView) => {
   width: 24px;
   height: 24px;
   display: block;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background-color: rgba(0, 0, 0, 0.2);
+  margin: 0 8px;
 }
 </style>
