@@ -71,10 +71,10 @@ export class CameraViewService {
     }
 
     private setFrustumSizeForOrthographicCamera(orthographicCamera: OrthographicCamera, radius: number) {
-        const k = radius / orthographicCamera.top;
-        orthographicCamera.left *= k;
-        orthographicCamera.right *= k;
-        orthographicCamera.top *= k;
-        orthographicCamera.bottom *= k;
+        const aspect = Math.abs(orthographicCamera.left / orthographicCamera.top);
+        orthographicCamera.left = -radius * aspect;
+        orthographicCamera.right = radius * aspect;
+        orthographicCamera.top = radius;
+        orthographicCamera.bottom = -radius;
     }
 }
