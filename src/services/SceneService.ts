@@ -80,7 +80,7 @@ export class SceneService {
         const aspect = this.width / this.height;
 
         return new PerspectiveCamera(
-            45,         // fov
+            35,         // fov
             aspect,     // aspect
             0.1,        // near
             1000        // far

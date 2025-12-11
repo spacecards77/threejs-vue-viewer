@@ -46,7 +46,7 @@ export class CameraViewService {
         this.mainOrthographicCamera.updateProjectionMatrix();
         this.mainOrthographicCamera.updateMatrixWorld(true);
 
-        this.separateAxesCamera.position.copy(cameraPosition.clone().add(cameraPositionOffset.clone().multiplyScalar(10)));
+        this.separateAxesCamera.position.copy(cameraPosition.clone().add(cameraPositionOffset.clone().multiplyScalar(5)));
         this.separateAxesCamera.up = cameraUp;
         this.separateAxesCamera.lookAt(center);
         this.setFrustumSizeForOrthographicCamera(this.separateAxesCamera, maxRadius);
