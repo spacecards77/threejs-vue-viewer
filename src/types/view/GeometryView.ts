@@ -6,7 +6,7 @@ export class GeometryView {
     public readonly CoordinateBegin: Group;
     private startPosition: Vector3;
     private startQuaternion: Quaternion;
-    private startScale: Vector3;
+    private startScaleFactor: number;
     private scene: Scene;
 
     constructor(scene: Scene, center: Vector3) {
@@ -25,19 +25,18 @@ export class GeometryView {
 
         this.startPosition = this.position.clone();
         this.startQuaternion = this.quaternion.clone();
-        this.startScale = this.scale.clone();
+        this.startScaleFactor = 1;
+    }
+
+    //private, т.к. масштабирование должно идти через setScaleExceptCoordinateAxes
+    private get scale(): Vector3 {
+        return this.parentGroup.scale;
     }
 
     public storeStarting() {
         this.startPosition = this.position.clone();
         this.startQuaternion = this.quaternion.clone();
-        this.startScale = this.scale.clone();
-    }
-
-    public restoreStarting() {
-        this.position.copy(this.startPosition);
-        this.quaternion.copy(this.startQuaternion);
-        this.scale.copy(this.startScale);
+        this.startScaleFactor = 1;
     }
 
     get position(): Vector3 {
@@ -53,8 +52,10 @@ export class GeometryView {
         this.CoordinateBegin.scale.multiplyScalar(1 / factor);
     }
 
-    get scale(): Vector3 {
-        return this.parentGroup.scale;
+    public restoreStarting() {
+        this.position.copy(this.startPosition);
+        this.quaternion.copy(this.startQuaternion);
+        this.setScaleExceptCoordinateAxes(this.startScaleFactor);
     }
 
     get parent(): Object3D | null {
