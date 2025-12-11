@@ -7,17 +7,17 @@ import {AssertUtils} from "../../utils/assert/AssertUtils.ts";
 export class CameraViewService {
     private readonly mainPerspectiveCamera: PerspectiveCamera;
     private readonly mainOrthographicCamera: OrthographicCamera;
-    private readonly staticAxesCamera: OrthographicCamera;
+    private readonly separateAxesCamera: OrthographicCamera;
     private readonly cameraViewParameters: Map<CameraView, CameraViewParameters> = new Map<CameraView, CameraViewParameters>([
         [CameraView.Isometric, new CameraViewParameters(new Vector3(1, 1, -1), new Vector3(0, 0, -1))],
         [CameraView.ReverseYDirection, new CameraViewParameters(new Vector3(0, 1, 0), new Vector3(0, 0, -1))],
     ]);
 
 
-    constructor(mainPerspectiveCamera: PerspectiveCamera, mainOrthographicCamera: OrthographicCamera, staticAxesCamera: OrthographicCamera) {
+    constructor(mainPerspectiveCamera: PerspectiveCamera, mainOrthographicCamera: OrthographicCamera, separateAxesCamera: OrthographicCamera) {
         this.mainPerspectiveCamera = mainPerspectiveCamera;
         this.mainOrthographicCamera = mainOrthographicCamera;
-        this.staticAxesCamera = staticAxesCamera;
+        this.separateAxesCamera = separateAxesCamera;
     }
 
     public setCameraView(cameraView: CameraView, geometry: IGeometry): void {
@@ -43,10 +43,10 @@ export class CameraViewService {
         this.mainOrthographicCamera.updateProjectionMatrix();
         this.mainOrthographicCamera.updateMatrixWorld(true);
 
-        this.staticAxesCamera.position.copy(cameraPosition.clone().add(cameraPositionOffset.clone().multiplyScalar(10)));
-        this.staticAxesCamera.up = cameraUp;
-        this.staticAxesCamera.lookAt(center);
-        this.staticAxesCamera.updateProjectionMatrix();
-        this.staticAxesCamera.updateMatrixWorld(true);
+        this.separateAxesCamera.position.copy(cameraPosition.clone().add(cameraPositionOffset.clone().multiplyScalar(10)));
+        this.separateAxesCamera.up = cameraUp;
+        this.separateAxesCamera.lookAt(center);
+        this.separateAxesCamera.updateProjectionMatrix();
+        this.separateAxesCamera.updateMatrixWorld(true);
     }
 }

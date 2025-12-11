@@ -15,7 +15,7 @@ export class SceneService {
 
     public readonly mainScene: THREE.Scene;
     mainCamera!: Camera;
-    public readonly staticAxesCamera: OrthographicCamera;
+    public readonly separateAxesCamera: OrthographicCamera;
 
     rendererService!: RenderService;
     private frustumSize = 40;
@@ -38,11 +38,11 @@ export class SceneService {
         this.mainOrthographicCamera = this.createOrthographicCamera(this.frustumSize);
         this.prepareMainCamera();
 
-        this.staticAxesCamera = this.createOrthographicCamera(this.frustumSize);
-        this.staticAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
+        this.separateAxesCamera = this.createOrthographicCamera(this.frustumSize);
+        this.separateAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
 
         this.drawService = new DrawService(this);
-        this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.staticAxesCamera);
+        this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.separateAxesCamera);
 
         this.geometryView = new GeometryView(this.mainScene, new Vector3())
         this.rendererService = new RenderService(this);
@@ -126,11 +126,11 @@ export class SceneService {
             this.mainPerspectiveCamera.aspect = aspect;
             this.mainPerspectiveCamera.updateProjectionMatrix();
 
-            this.staticAxesCamera.left = this.frustumSize * aspect / -2;
-            this.staticAxesCamera.right = this.frustumSize * aspect / 2;
-            this.staticAxesCamera.top = this.frustumSize / 2;
-            this.staticAxesCamera.bottom = this.frustumSize / -2;
-            this.staticAxesCamera.updateProjectionMatrix();
+            this.separateAxesCamera.left = this.frustumSize * aspect / -2;
+            this.separateAxesCamera.right = this.frustumSize * aspect / 2;
+            this.separateAxesCamera.top = this.frustumSize / 2;
+            this.separateAxesCamera.bottom = this.frustumSize / -2;
+            this.separateAxesCamera.updateProjectionMatrix();
 
             this.rendererService.setSize(this.width, this.height);
         });

@@ -45,7 +45,7 @@ export class RenderService {
 
             this.renderer.clearDepth();
 
-            this.renderStaticAxes();
+            this.renderSeparateAxes();
         };
 
         animate();
@@ -60,8 +60,8 @@ export class RenderService {
         this.renderer.render(this.sceneService.mainScene, this.sceneService.mainCamera);
     }
 
-    private renderStaticAxes() {
-        this.setStaticAxesCameraViewOffset();
+    private renderSeparateAxes() {
+        this.setSeparateAxesCameraViewOffset();
 
         const widgetMargin = config.coordinateAxes.widgetMargin;
         const widgetSize = config.coordinateAxes.widgetSize;
@@ -69,15 +69,15 @@ export class RenderService {
         this.renderer.setScissor(widgetMargin, widgetMargin, widgetSize, widgetSize);
         this.renderer.setScissorTest(true);
 
-        this.sceneService.staticAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
+        this.sceneService.separateAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
 
-        this.renderer.render(this.sceneService.mainScene, this.sceneService.staticAxesCamera);
+        this.renderer.render(this.sceneService.mainScene, this.sceneService.separateAxesCamera);
     }
 
-    private setStaticAxesCameraViewOffset() {
+    private setSeparateAxesCameraViewOffset() {
         this.sceneService.geometryView.CoordinateBegin.getWorldPosition(this.coordinateAxesPosition);
-        this.sceneService.staticAxesCamera.clearViewOffset();
-        this.screenPos.copy(this.coordinateAxesPosition).project(this.sceneService.staticAxesCamera);
+        this.sceneService.separateAxesCamera.clearViewOffset();
+        this.screenPos.copy(this.coordinateAxesPosition).project(this.sceneService.separateAxesCamera);
         // Переводим из NDC (-1..+1) в пиксельные координаты экрана (0..width)
         const x = (this.screenPos.x * 0.5 + 0.5) * this.sceneService.width;
         const y = (-(this.screenPos.y * 0.5) + 0.5) * this.sceneService.height; // Y инвертирован в WebGL относительно CSS
@@ -87,7 +87,7 @@ export class RenderService {
         const viewX = x - config.coordinateAxes.widgetSize / 2;
         const viewY = y - config.coordinateAxes.widgetSize / 2;
 
-        this.sceneService.staticAxesCamera.setViewOffset(this.sceneService.width, this.sceneService.height,
+        this.sceneService.separateAxesCamera.setViewOffset(this.sceneService.width, this.sceneService.height,
             viewX, viewY, config.coordinateAxes.widgetSize, config.coordinateAxes.widgetSize);
     }
 
