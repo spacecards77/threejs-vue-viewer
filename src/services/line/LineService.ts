@@ -159,7 +159,7 @@ export class LineService {
             } else {
                 line.material.dispose();
             }
-            this.geometryView.remove(line);
+            line.parent?.remove(line);
         }
         this.lines = [];
 
@@ -170,7 +170,7 @@ export class LineService {
             } else {
                 cone.material.dispose();
             }
-            this.geometryView.remove(cone);
+            cone.parent?.remove(cone);
         }
         this.cones = [];
 
@@ -181,8 +181,15 @@ export class LineService {
             } else {
                 dot.material.dispose();
             }
-            this.geometryView.remove(dot);
+            dot.parent?.remove(dot);
         }
         this.dots = [];
+    }
+
+    public dispose(): void {
+        this.geometryView.dispose();
+        this.lines = [];
+        this.dots = [];
+        this.cones = [];
     }
 }

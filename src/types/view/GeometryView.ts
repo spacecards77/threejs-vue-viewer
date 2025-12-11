@@ -7,10 +7,12 @@ export class GeometryView {
     private startPosition: Vector3;
     private startQuaternion: Quaternion;
     private startScale: Vector3;
+    private scene: Scene;
 
     constructor(scene: Scene, center: Vector3) {
+        this.scene = scene;
         this.parentGroup = new Group();
-        scene.add(this.parentGroup);
+        this.scene.add(this.parentGroup);
         if (config.debugMode)
             this.parentGroup.name = 'GroupParent';
 
@@ -69,5 +71,29 @@ export class GeometryView {
 
     getWorldPosition(target: Vector3) {
         return this.parentGroup.getWorldPosition(target);
+    }
+
+    dispose() {
+        // Рекурсивно очищаем все дочерние объекты
+        this.parentGroup.traverse((object) => {
+            if (object !== this.parentGroup && object !== this.CoordinateBegin) {
+                // Очищаем геометрию
+                if ('geometry' in object && object.geometry) {
+                    (object.geometry as any).dispose();
+                }
+
+                // Очищаем материалы
+                if ('material' in object && object.material) {
+                    const material = object.material as any;
+                    if (Array.isArray(material)) {
+                        material.forEach(m => m.dispose());
+                    } else {
+                        material.dispose();
+                    }
+                }
+            }
+        });
+
+        this.scene.remove(this.parentGroup);
     }
 }

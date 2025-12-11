@@ -64,9 +64,15 @@ export class DrawService {
 
     }
 
+    public dispose() {
+        if (this.mainLineService) {
+            this.mainLineService.dispose();
+        }
+    }
+
     private createServices(center: Vector3) {
         if (this.mainLineService) {
-            this.mainLineService.clearAllLines();
+            this.mainLineService.dispose();
         }
         this.mainLineService = new MainLineService(this.sceneService.mainScene, center);
     }

@@ -139,6 +139,12 @@ export class SceneService {
     dispose() {
         this.modelNavigationService.dispose();
         this.rendererService.dispose();
+        this.drawService.dispose();
+
+        // Очистка геометрии если она есть
+        if (this.geometryView) {
+            this.geometryView.dispose();
+        }
     }
 
     setMainCamera(isMainPerspective: boolean) {

@@ -47,8 +47,26 @@ export class ModelNavigationService {
     private panStart: Vector2 = new Vector2();
     private panEnd: Vector2 = new Vector2();
 
+    // Bound event handlers
+    private boundOnMouseDown: (event: MouseEvent) => void;
+    private boundOnMouseMove: (event: MouseEvent) => void;
+    private boundOnMouseUp: () => void;
+    private boundOnMouseLeave: () => void;
+    private boundOnMouseWheel: (event: WheelEvent) => void;
+    private boundOnKeyDown: (event: KeyboardEvent) => void;
+    private boundOnKeyUp: () => void;
+
     constructor(sceneService: SceneService) {
         this.sceneService = sceneService;
+
+        // Bind event handlers once
+        this.boundOnMouseDown = this.onMouseDown.bind(this);
+        this.boundOnMouseMove = this.onMouseMove.bind(this);
+        this.boundOnMouseUp = this.onMouseUp.bind(this);
+        this.boundOnMouseLeave = this.onMouseLeave.bind(this);
+        this.boundOnMouseWheel = this.onMouseWheel.bind(this);
+        this.boundOnKeyDown = this.onKeyDown.bind(this);
+        this.boundOnKeyUp = this.onKeyUp.bind(this);
 
         this.setupEventListeners();
     }
@@ -58,13 +76,13 @@ export class ModelNavigationService {
      */
     public dispose(): void {
         const domElement = this.sceneService.rendererService.domElement;
-        domElement.removeEventListener('mousedown', this.onMouseDown.bind(this));
-        domElement.removeEventListener('mousemove', this.onMouseMove.bind(this));
-        domElement.removeEventListener('mouseup', this.onMouseUp.bind(this));
-        domElement.removeEventListener('mouseleave', this.onMouseLeave.bind(this));
-        domElement.removeEventListener('wheel', this.onMouseWheel.bind(this));
-        window.removeEventListener('keydown', this.onKeyDown.bind(this));
-        window.removeEventListener('keyup', this.onKeyUp.bind(this));
+        domElement.removeEventListener('mousedown', this.boundOnMouseDown);
+        domElement.removeEventListener('mousemove', this.boundOnMouseMove);
+        domElement.removeEventListener('mouseup', this.boundOnMouseUp);
+        domElement.removeEventListener('mouseleave', this.boundOnMouseLeave);
+        domElement.removeEventListener('wheel', this.boundOnMouseWheel);
+        window.removeEventListener('keydown', this.boundOnKeyDown);
+        window.removeEventListener('keyup', this.boundOnKeyUp);
     }
 
     private onMouseDown(event: MouseEvent): void {
@@ -226,13 +244,13 @@ export class ModelNavigationService {
 
     private setupEventListeners(): void {
         const domElement = this.sceneService.rendererService.domElement;
-        domElement.addEventListener('mousedown', this.onMouseDown.bind(this));
-        domElement.addEventListener('mousemove', this.onMouseMove.bind(this));
-        domElement.addEventListener('mouseup', this.onMouseUp.bind(this));
-        domElement.addEventListener('mouseleave', this.onMouseLeave.bind(this));
-        domElement.addEventListener('wheel', this.onMouseWheel.bind(this), {passive: false});
-        window.addEventListener('keydown', this.onKeyDown.bind(this));
-        window.addEventListener('keyup', this.onKeyUp.bind(this));
+        domElement.addEventListener('mousedown', this.boundOnMouseDown);
+        domElement.addEventListener('mousemove', this.boundOnMouseMove);
+        domElement.addEventListener('mouseup', this.boundOnMouseUp);
+        domElement.addEventListener('mouseleave', this.boundOnMouseLeave);
+        domElement.addEventListener('wheel', this.boundOnMouseWheel, {passive: false});
+        window.addEventListener('keydown', this.boundOnKeyDown);
+        window.addEventListener('keyup', this.boundOnKeyUp);
     }
 
     private rotateObject(deltaX: number, deltaY: number): void {
