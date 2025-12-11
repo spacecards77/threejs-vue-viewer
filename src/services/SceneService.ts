@@ -23,8 +23,8 @@ export class SceneService {
     height: number = 0;
     public geometryView: GeometryView;
     private isMainPerspective: boolean = false;
-    private readonly mainOrthographicCamera: OrthographicCamera;
-    private readonly mainPerspectiveCamera: PerspectiveCamera;
+    readonly mainOrthographicCamera: OrthographicCamera;
+    readonly mainPerspectiveCamera: PerspectiveCamera;
 
     constructor(canvasElement: HTMLElement) {
         this.canvasElement = canvasElement;
@@ -40,11 +40,11 @@ export class SceneService {
         this.separateAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
 
         this.drawService = new DrawService(this);
-        this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.separateAxesCamera);
 
         this.geometryView = new GeometryView(this.mainScene, new Vector3())
         this.rendererService = new RenderService(this);
         this.modelNavigationService = new ModelNavigationService(this);
+        this.cameraViewService = new CameraViewService(this);
 
 
         this.setupEventListeners();

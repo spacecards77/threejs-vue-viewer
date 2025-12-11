@@ -36,7 +36,12 @@ export class ModelNavigationService {
     public desiredUp: Vector3 = new Vector3(0, 0, -1);
     public maxAngleToStartAlign: number = Math.PI / 10;
     public maxAlignAngle: number = Math.PI / 500;
+
+    // Rotation axis configuration (set by CameraViewService when changing views)
+    // Эти векторы используются как ОПОРНЫЕ для динамического вычисления осей вращения
+    // mouseXMoveRotationAxis - вертикальная ось (для движения мыши влево/вправо)
     public mouseXMoveRotationAxis: Vector3 = new Vector3(0, 0, -1);
+    // mouseYMoveRotationAxis - резервная горизонтальная ось (для движения мыши вверх/вниз)
     public mouseYMoveRotationAxis: Vector3 = new Vector3(1, 0, 0);
 
     // Zoom state
@@ -260,15 +265,35 @@ export class ModelNavigationService {
         const objectWorldPosition = new Vector3();
         this.sceneService.geometryView.getWorldPosition(objectWorldPosition);
 
+        // РЕШЕНИЕ GIMBAL LOCK: вычисляем оси вращения динамически на основе текущего положения камеры
+        const cameraWorldPosition = new Vector3();
+        this.sceneService.mainCamera.getWorldPosition(cameraWorldPosition);
+
+        // Вектор от объекта к камере (направление взгляда)
+        const viewDirection = new Vector3().subVectors(cameraWorldPosition, objectWorldPosition).normalize();
+
+        // Ось вращения для движения мыши по X (вертикальная ось)
+        // Используем mouseXMoveRotationAxis как опорный вектор "вверх"
+        const verticalRotationAxis = this.mouseXMoveRotationAxis.clone().normalize();
+
+        // Ось вращения для движения мыши по Y (горизонтальная ось)
+        // Вычисляем перпендикуляр к направлению взгляда и вертикальной оси
+        const horizontalRotationAxis = new Vector3().crossVectors(verticalRotationAxis, viewDirection).normalize();
+
+        // Проверяем, не вырождены ли оси (это может произойти, когда viewDirection параллелен verticalRotationAxis)
+        if (horizontalRotationAxis.length() < 0.001) {
+            // В этом случае используем mouseYMoveRotationAxis как резервный вариант
+            horizontalRotationAxis.copy(this.mouseYMoveRotationAxis).normalize();
+        }
+
         if (deltaX !== 0) {
             const rotationAngleY = deltaX * this.rotationSpeed;
-            this.rotateAroundWorldAxis(this.mouseXMoveRotationAxis, rotationAngleY, objectWorldPosition);
+            this.rotateAroundWorldAxis(verticalRotationAxis, rotationAngleY, objectWorldPosition);
         }
 
         if (deltaY !== 0) {
             const rotationAngleX = deltaY * this.rotationSpeed;
-
-            this.rotateAroundWorldAxis(this.mouseYMoveRotationAxis, rotationAngleX, objectWorldPosition);
+            this.rotateAroundWorldAxis(horizontalRotationAxis, rotationAngleX, objectWorldPosition);
         }
     }
 
