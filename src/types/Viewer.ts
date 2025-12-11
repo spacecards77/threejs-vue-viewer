@@ -56,12 +56,11 @@ export class Viewer {
     private processConstruction(construction: Construction) {
         this.construction = construction;
 
-        //должно быть до отрисовки Ui, чтобы привязать статические оси к позиции на экране
-        this.cameraViewService.setCameraView(CameraView.ReverseYDirection, this.construction.geometry);
-
         this.drawService.addConstructionToScene(this.construction);
 
         this.sceneService.setGeometryView(construction.geometry.GeometryView!);
+
+        this.setCameraView(CameraView.ReverseYDirection);
     }
 
     // Очистка при уходе со страницы

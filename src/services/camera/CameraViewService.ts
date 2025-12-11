@@ -10,7 +10,14 @@ export class CameraViewService {
     private readonly separateAxesCamera: OrthographicCamera;
     private readonly cameraViewParameters: Map<CameraView, CameraViewParameters> = new Map<CameraView, CameraViewParameters>([
         [CameraView.Isometric, new CameraViewParameters(new Vector3(1, 1, -1), new Vector3(0, 0, -1))],
+
+        [CameraView.XDirection, new CameraViewParameters(new Vector3(-1, 0, 0), new Vector3(0, 0, 1))],
+        [CameraView.YDirection, new CameraViewParameters(new Vector3(0, -1, 0), new Vector3(0, 0, -1))],
+        [CameraView.ZDirection, new CameraViewParameters(new Vector3(0, 0, -1), new Vector3(-1, 0, 0))],
+
+        [CameraView.ReverseXDirection, new CameraViewParameters(new Vector3(1, 0, 0), new Vector3(0, 0, -1))],
         [CameraView.ReverseYDirection, new CameraViewParameters(new Vector3(0, 1, 0), new Vector3(0, 0, -1))],
+        [CameraView.ReverseZDirection, new CameraViewParameters(new Vector3(0, 0, 1), new Vector3(1, 0, 0))],
     ]);
 
 
@@ -36,22 +43,22 @@ export class CameraViewService {
         this.mainPerspectiveCamera.position.copy(cameraPosition);
         this.mainPerspectiveCamera.up = cameraUp;
         this.mainPerspectiveCamera.lookAt(center);
-        this.mainPerspectiveCamera.updateProjectionMatrix();
         this.mainPerspectiveCamera.updateMatrixWorld(true);
+        this.mainPerspectiveCamera.updateProjectionMatrix();
 
         this.mainOrthographicCamera.position.copy(cameraPosition);
         this.mainOrthographicCamera.up = cameraUp;
         this.mainOrthographicCamera.lookAt(center);
         this.setFrustumSizeForOrthographicCamera(this.mainOrthographicCamera, maxRadius);
-        this.mainOrthographicCamera.updateProjectionMatrix();
         this.mainOrthographicCamera.updateMatrixWorld(true);
+        this.mainOrthographicCamera.updateProjectionMatrix();
 
         this.separateAxesCamera.position.copy(cameraPosition.clone().add(cameraPositionOffset.clone().multiplyScalar(5)));
         this.separateAxesCamera.up = cameraUp;
         this.separateAxesCamera.lookAt(center);
         this.setFrustumSizeForOrthographicCamera(this.separateAxesCamera, maxRadius);
-        this.separateAxesCamera.updateProjectionMatrix();
         this.separateAxesCamera.updateMatrixWorld(true);
+        this.separateAxesCamera.updateProjectionMatrix();
     }
 
     private calculateRequiredDistance(maxRadius: number) {

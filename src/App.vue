@@ -4,7 +4,12 @@ import Viewer from './components/Viewer.vue';
 import openIcon from './assets/openJson.png';
 import perspectiveIcon from './assets/perspectiveView.png';
 import viewInIsometricIcon from './assets/viewInIsometric.png';
+import viewInXDirectionIcon from './assets/viewInXDirection.png';
+import viewInYDirectionIcon from './assets/viewInYDirection.png';
+import viewInZDirectionIcon from './assets/viewInZDirection.png';
+import viewInReverseXDirectionIcon from './assets/viewInReverseXDirection.png';
 import viewInReverseYDirectionIcon from './assets/viewInReverseYDirection.png';
+import viewInReverseZDirectionIcon from './assets/viewInReverseZDirection.png';
 import {CameraView} from './services/camera/CameraView.ts';
 
 const sceneRef = ref<InstanceType<typeof Viewer> | null>(null);
@@ -14,7 +19,12 @@ const isPerspectiveView = ref(false);
 const openIconUrl: string = openIcon;
 const perspectiveIconUrl: string = perspectiveIcon;
 const viewInIsometricIconUrl: string = viewInIsometricIcon;
+const viewInXDirectionUrl: string = viewInXDirectionIcon;
+const viewInYDirectionUrl: string = viewInYDirectionIcon;
+const viewInZDirectionUrl: string = viewInZDirectionIcon;
+const viewInReverseXDirectionUrl: string = viewInReverseXDirectionIcon;
 const viewInReverseYDirectionUrl: string = viewInReverseYDirectionIcon;
+const viewInReverseZDirectionUrl: string = viewInReverseZDirectionIcon;
 
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -78,6 +88,36 @@ const setCameraView = (cameraView: CameraView) => {
       >
         <img :src="viewInIsometricIconUrl" alt="Isometric View" class="toolbar-icon"/>
       </button>
+
+      <button
+          class="toolbar-button"
+          title="Вид в направлении X"
+          @click="setCameraView(CameraView.XDirection)"
+      >
+        <img :src="viewInXDirectionUrl" alt="X Direction View" class="toolbar-icon"/>
+      </button>
+      <button
+          class="toolbar-button"
+          title="Вид в направлении Y"
+          @click="setCameraView(CameraView.YDirection)"
+      >
+        <img :src="viewInYDirectionUrl" alt="Y Direction View" class="toolbar-icon"/>
+      </button>
+      <button
+          class="toolbar-button"
+          title="Вид в направлении Z"
+          @click="setCameraView(CameraView.ZDirection)"
+      >
+        <img :src="viewInZDirectionUrl" alt="Z Direction View" class="toolbar-icon"/>
+      </button>
+
+      <button
+          class="toolbar-button"
+          title="Вид в обратном направлении X"
+          @click="setCameraView(CameraView.ReverseXDirection)"
+      >
+        <img :src="viewInReverseXDirectionUrl" alt="Reverse X Direction View" class="toolbar-icon"/>
+      </button>
       <button
           class="toolbar-button"
           title="Вид в обратном направлении Y"
@@ -85,6 +125,14 @@ const setCameraView = (cameraView: CameraView) => {
       >
         <img :src="viewInReverseYDirectionUrl" alt="Reverse Y Direction View" class="toolbar-icon"/>
       </button>
+      <button
+          class="toolbar-button"
+          title="Вид в обратном направлении Z"
+          @click="setCameraView(CameraView.ReverseZDirection)"
+      >
+        <img :src="viewInReverseZDirectionUrl" alt="Reverse Z Direction View" class="toolbar-icon"/>
+      </button>
+
     </div>
   </div>
 </template>
