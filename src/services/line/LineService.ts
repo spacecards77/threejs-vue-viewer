@@ -94,7 +94,8 @@ export class LineService {
               options?: {
                   color?: THREE.Color | number,
                   linewidth?: number,
-                  parent?: Object3D
+                  parent?: Object3D,
+                  kSizeFactor?: number
               }
     ) {
         // Calculate total length and direction
@@ -107,8 +108,10 @@ export class LineService {
         // Draw the line from start to lineEnd
         this.drawLine(start, end, options);
 
-        // Create cone geometry and material
-        const coneGeometry = new THREE.ConeGeometry(this.coneRadius, this.coneHeight, 16);
+        const kSizeFactor = options?.kSizeFactor ?? 1;
+        const coneRadius = this.coneRadius * kSizeFactor;
+        const coneHeight = this.coneHeight * kSizeFactor;
+        const coneGeometry = new THREE.ConeGeometry(coneRadius, coneHeight, 16);
         const col = new Color(options?.color ?? 0x0000ff);
         const coneMaterial = new THREE.MeshBasicMaterial({color: col});
         const cone = new THREE.Mesh(coneGeometry, coneMaterial);
@@ -138,17 +141,17 @@ export class LineService {
         this.cones.push(cone);
     }
 
-    public drawCoordinateAxes() {
+    public drawCoordinateAxes(kSizeFactor: number) {
         const start = new Vector3().sub(this.geometryView.coordinateBegin.position);
         const coordinateBegin = this.geometryView.coordinateBegin;
         let linewidth = config.coordinateAxes.lineWidth;
-        let length = config.coordinateAxes.length;
+        let length = config.coordinateAxes.length * kSizeFactor;
         this.drawArrow(start, new Vector3(start.x + length, start.y, start.z),
-            {color: 0xBA0000, linewidth: linewidth, parent: coordinateBegin}); // X - Red
+            {color: 0xBA0000, linewidth: linewidth, parent: coordinateBegin, kSizeFactor: kSizeFactor}); // X - Red
         this.drawArrow(start, new Vector3(start.x, start.y + length, start.z),
-            {color: 0x00C500, linewidth: linewidth, parent: coordinateBegin}); // Y - Green
+            {color: 0x00C500, linewidth: linewidth, parent: coordinateBegin, kSizeFactor: kSizeFactor}); // Y - Green
         this.drawArrow(start, new Vector3(start.x, start.y, start.z + length),
-            {color: 0x00FFFF, linewidth: linewidth, parent: coordinateBegin}); // Z - Blue
+            {color: 0x00FFFF, linewidth: linewidth, parent: coordinateBegin, kSizeFactor: kSizeFactor}); // Z - Blue
     }
 
     clearAllLines(): void {

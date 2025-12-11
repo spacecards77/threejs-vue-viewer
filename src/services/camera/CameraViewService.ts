@@ -60,9 +60,7 @@ export class CameraViewService {
         const distanceForVerticalFOV = maxRadius / Math.tan(fovRadians / 2);
         const distanceForHorizontalFOV = (maxRadius / this.mainPerspectiveCamera.aspect) / Math.tan(fovRadians / 2);
 
-        const requiredDistance = Math.max(distanceForVerticalFOV, distanceForHorizontalFOV);
-
-        return requiredDistance;
+        return Math.max(distanceForVerticalFOV, distanceForHorizontalFOV);
     }
 
     private setFrustumSizeForOrthographicCamera(orthographicCamera: OrthographicCamera, radius: number) {

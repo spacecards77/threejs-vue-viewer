@@ -9,5 +9,6 @@ export const config = {
         widgetSize: 200,
         widgetMargin: 0,
         connectedAxesLayer: 1,
-    }
+    },
+    standardMaxRadius: 20
 };

@@ -18,8 +18,6 @@ export class SceneService {
     public readonly separateAxesCamera: OrthographicCamera;
 
     rendererService!: RenderService;
-    private frustumSize = 40;
-
     canvasElement!: HTMLElement | null;
     width: number = 0;
     height: number = 0;
@@ -35,10 +33,10 @@ export class SceneService {
         this.mainScene = this.createMainScene();
 
         this.mainPerspectiveCamera = this.createPerspectiveCamera();
-        this.mainOrthographicCamera = this.createOrthographicCamera(this.frustumSize);
+        this.mainOrthographicCamera = this.createOrthographicCamera();
         this.prepareMainCamera();
 
-        this.separateAxesCamera = this.createOrthographicCamera(this.frustumSize);
+        this.separateAxesCamera = this.createOrthographicCamera();
         this.separateAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
 
         this.drawService = new DrawService(this);
@@ -89,8 +87,9 @@ export class SceneService {
         );
     }
 
-    private createOrthographicCamera(frustumSize: number): OrthographicCamera {
+    private createOrthographicCamera(): OrthographicCamera {
         const aspect = this.width / this.height;
+        const frustumSize = 40;
 
         return new OrthographicCamera(
             frustumSize * aspect / -2, // left
@@ -117,19 +116,19 @@ export class SceneService {
             this.updateSizeForContainer();
 
             const aspect = this.width / this.height;
-            this.mainOrthographicCamera.left = this.frustumSize * aspect / -2;
-            this.mainOrthographicCamera.right = this.frustumSize * aspect / 2;
-            this.mainOrthographicCamera.top = this.frustumSize / 2;
-            this.mainOrthographicCamera.bottom = this.frustumSize / -2;
+            this.mainOrthographicCamera.left = 40 * aspect / -2;
+            this.mainOrthographicCamera.right = 40 * aspect / 2;
+            this.mainOrthographicCamera.top = 40 / 2;
+            this.mainOrthographicCamera.bottom = 40 / -2;
             this.mainOrthographicCamera.updateProjectionMatrix();
 
             this.mainPerspectiveCamera.aspect = aspect;
             this.mainPerspectiveCamera.updateProjectionMatrix();
 
-            this.separateAxesCamera.left = this.frustumSize * aspect / -2;
-            this.separateAxesCamera.right = this.frustumSize * aspect / 2;
-            this.separateAxesCamera.top = this.frustumSize / 2;
-            this.separateAxesCamera.bottom = this.frustumSize / -2;
+            this.separateAxesCamera.left = 40 * aspect / -2;
+            this.separateAxesCamera.right = 40 * aspect / 2;
+            this.separateAxesCamera.top = 40 / 2;
+            this.separateAxesCamera.bottom = 40 / -2;
             this.separateAxesCamera.updateProjectionMatrix();
 
             this.rendererService.setSize(this.width, this.height);

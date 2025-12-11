@@ -21,7 +21,7 @@ export class DrawService {
 
         this.addGeometryToScene(construction.geometry);
 
-        this.addUiToScene();
+        this.addUiToScene(construction.geometry.getMaxRadius());
     }
 
     private addGeometryToScene(geometry: Geometry) {
@@ -56,8 +56,8 @@ export class DrawService {
         geometry.GeometryView.storeStarting();
     }
 
-    private addUiToScene() {
-        this.mainLineService.drawCoordinateAxes();
+    private addUiToScene(maxRadius: number) {
+        this.mainLineService.drawCoordinateAxes(maxRadius / config.standardMaxRadius);
         this.mainLineService.geometryView.coordinateBegin.traverse(
             child => child.layers.enable(config.coordinateAxes.connectedAxesLayer));
 
