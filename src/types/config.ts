@@ -6,8 +6,8 @@ export const config = {
     coordinateAxes: {
         length: 1.5,
         lineWidth: 3,
-        widgetSize: 150,
-        widgetMargin: 20,
+        widgetSize: 200,
+        widgetMargin: 0,
         connectedAxesLayer: 1,
     }
 };

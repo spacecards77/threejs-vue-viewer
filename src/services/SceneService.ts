@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import {type Camera, OrthographicCamera, PerspectiveCamera} from 'three';
+import {type Camera, OrthographicCamera, PerspectiveCamera, Vector3} from 'three';
 import {DrawService} from "./DrawService.ts";
 import {ModelNavigationService} from "../types/controls/ModelNavigationService.ts";
 import {AssertUtils} from "../utils/assert/AssertUtils.ts";
-import type {GeometryView} from "../types/view/GeometryView.ts";
+import {GeometryView} from "../types/view/GeometryView.ts";
 import {RenderService} from './RenderService.ts';
 import {CameraViewService} from "./camera/CameraViewService.ts";
 import {config} from "../types/config.ts";
@@ -23,7 +23,7 @@ export class SceneService {
     canvasElement!: HTMLElement | null;
     width: number = 0;
     height: number = 0;
-    geometryView: GeometryView | null = null;
+    public geometryView: GeometryView;
     private isMainPerspective: boolean = false;
     private readonly mainOrthographicCamera: OrthographicCamera;
     private readonly mainPerspectiveCamera: PerspectiveCamera;
@@ -44,8 +44,10 @@ export class SceneService {
         this.drawService = new DrawService(this);
         this.cameraViewService = new CameraViewService(this.mainPerspectiveCamera, this.mainOrthographicCamera, this.staticAxesCamera);
 
+        this.geometryView = new GeometryView(this.mainScene, new Vector3())
         this.rendererService = new RenderService(this);
         this.modelNavigationService = new ModelNavigationService(this);
+
 
         this.setupEventListeners();
     }
