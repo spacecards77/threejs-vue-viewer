@@ -25,11 +25,13 @@ export class CameraViewService {
             'Camera view parameters not found for camera view: {0}', cameraView);
 
         const center = geometry.getCenter();
-        const size = geometry.getBox();
-        const cameraDistance = Math.max(size.x, size.y, size.z) * 1.5;
-        const cameraPositionOffset = this.cameraViewParameters.get(cameraView)!.backward.clone().normalize().multiplyScalar(cameraDistance);
+        const cameraViewParameter = this.cameraViewParameters.get(cameraView);
+        const maxRadius = geometry.getMaxRadius();
+        const requiredDistance = this.calculateRequiredDistance(maxRadius) * 1.1;
+
+        const cameraPositionOffset = cameraViewParameter!.backward.clone().normalize().multiplyScalar(requiredDistance);
         const cameraPosition = center.clone().add(cameraPositionOffset);
-        const cameraUp = this.cameraViewParameters.get(cameraView)!.up.clone().normalize();
+        const cameraUp = cameraViewParameter!.up.clone().normalize();
 
         this.mainPerspectiveCamera.position.copy(cameraPosition);
         this.mainPerspectiveCamera.up = cameraUp;
@@ -40,13 +42,34 @@ export class CameraViewService {
         this.mainOrthographicCamera.position.copy(cameraPosition);
         this.mainOrthographicCamera.up = cameraUp;
         this.mainOrthographicCamera.lookAt(center);
+        this.setFrustumSizeForOrthographicCamera(this.mainOrthographicCamera, maxRadius);
         this.mainOrthographicCamera.updateProjectionMatrix();
         this.mainOrthographicCamera.updateMatrixWorld(true);
 
         this.separateAxesCamera.position.copy(cameraPosition.clone().add(cameraPositionOffset.clone().multiplyScalar(10)));
         this.separateAxesCamera.up = cameraUp;
         this.separateAxesCamera.lookAt(center);
+        this.setFrustumSizeForOrthographicCamera(this.separateAxesCamera, maxRadius);
         this.separateAxesCamera.updateProjectionMatrix();
         this.separateAxesCamera.updateMatrixWorld(true);
+    }
+
+    private calculateRequiredDistance(maxRadius: number) {
+        const fovRadians = (this.mainPerspectiveCamera.fov * Math.PI) / 180;
+
+        const distanceForVerticalFOV = maxRadius / Math.tan(fovRadians / 2);
+        const distanceForHorizontalFOV = (maxRadius / this.mainPerspectiveCamera.aspect) / Math.tan(fovRadians / 2);
+
+        const requiredDistance = Math.max(distanceForVerticalFOV, distanceForHorizontalFOV);
+
+        return requiredDistance;
+    }
+
+    private setFrustumSizeForOrthographicCamera(orthographicCamera: OrthographicCamera, radius: number) {
+        const k = radius / orthographicCamera.top;
+        orthographicCamera.left *= k;
+        orthographicCamera.right *= k;
+        orthographicCamera.top *= k;
+        orthographicCamera.bottom *= k;
     }
 }

@@ -89,8 +89,8 @@ export class SceneService {
         );
     }
 
-    private createOrthographicCamera(frustumSize: number, nonStandardAspect?: number): OrthographicCamera {
-        const aspect = nonStandardAspect ?? this.width / this.height;
+    private createOrthographicCamera(frustumSize: number): OrthographicCamera {
+        const aspect = this.width / this.height;
 
         return new OrthographicCamera(
             frustumSize * aspect / -2, // left
