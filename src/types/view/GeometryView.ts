@@ -1,8 +1,10 @@
 import {Group, Object3D, type Quaternion, type Scene, Vector3} from "three";
 import {config} from "../config.ts";
+import {Text} from 'troika-three-text';
 
 export class GeometryView {
     private readonly parentGroup: Group;
+    private readonly constantGroup: Group;
     public readonly coordinateBegin: Group;
     private startPosition: Vector3;
     private startQuaternion: Quaternion;
@@ -11,10 +13,16 @@ export class GeometryView {
 
     constructor(scene: Scene, center: Vector3) {
         this.scene = scene;
+
         this.parentGroup = new Group();
         this.scene.add(this.parentGroup);
         if (config.debugMode)
             this.parentGroup.name = 'GroupParent';
+
+        this.constantGroup = new Group();
+        this.scene.add(this.constantGroup);
+        if (config.debugMode)
+            this.constantGroup.name = 'ConstantGroup';
 
         this.coordinateBegin = new Group();
         const coordinateBeginPosition = new Vector3();
@@ -66,10 +74,6 @@ export class GeometryView {
         this.parentGroup.add(object);
     }
 
-    remove(object: Object3D) {
-        this.parentGroup.remove(object);
-    }
-
     getWorldPosition(target: Vector3) {
         return this.parentGroup.getWorldPosition(target);
     }
@@ -78,26 +82,19 @@ export class GeometryView {
         // Рекурсивно очищаем все дочерние объекты
         this.parentGroup.traverse((object) => {
             if (object !== this.parentGroup && object !== this.coordinateBegin) {
-                // Очищаем геометрию
-                if ('geometry' in object && object.geometry) {
-                    (object.geometry as any).dispose();
-                }
+                this.disposeObject(object);
+            }
+        });
 
-                // Очищаем материалы
-                if ('material' in object && object.material) {
-                    const material = object.material as any;
-                    if (Array.isArray(material)) {
-                        material.forEach(m => m.dispose());
-                    } else {
-                        material.dispose();
-                    }
-                }
+        this.constantGroup.traverse((object) => {
+            if (object !== this.constantGroup) {
+                this.disposeObject(object);
             }
         });
 
         // Удаляем все дочерние объекты из coordinateBegin
-        while (this.coordinateBegin.children.length > 0) {
-            const child = this.coordinateBegin.children[0];
+        const coordinateBeginChildren = [...this.coordinateBegin.children];
+        for (const child of coordinateBeginChildren) {
             if (child) {
                 this.coordinateBegin.remove(child);
             }
@@ -111,13 +108,43 @@ export class GeometryView {
             }
         }
 
+        const constantChildren = [...this.constantGroup.children];
+        for (const child of constantChildren) {
+            if (child) {
+                this.constantGroup.remove(child);
+            }
+        }
+
         if (doRemoveFromScene) {
             this.parentGroup.remove(this.coordinateBegin)
             this.scene.remove(this.parentGroup);
+            this.scene.remove(this.constantGroup);
         }
     }
 
     addToConstantGroup(object: Object3D) {
-        this.scene.add(object); //TODO: сделать группу для константных объектов и очистку этой группы
+        this.constantGroup.add(object);
+    }
+
+    private disposeObject(object: Object3D) {
+        if (object instanceof Text) {
+            object.dispose();
+            return;
+        }
+
+        // Очищаем геометрию
+        if ('geometry' in object && object.geometry) {
+            (object.geometry as any).dispose();
+        }
+
+        // Очищаем материалы
+        if ('material' in object && object.material) {
+            const material = object.material as any;
+            if (Array.isArray(material)) {
+                material.forEach(m => m.dispose());
+            } else {
+                material.dispose();
+            }
+        }
     }
 }
