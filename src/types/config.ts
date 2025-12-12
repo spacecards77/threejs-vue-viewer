@@ -10,5 +10,12 @@ export const config = {
         widgetMargin: 0,
         connectedAxesLayer: 1,
     },
+
+    rendering: {
+        nodeRenderOrder: 800,
+        textRenderOrder: 900,
+        textLayer: 1,
+    },
+
     standardMaxRadius: 20
 };

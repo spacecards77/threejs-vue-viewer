@@ -1,16 +1,20 @@
 import {Text} from 'troika-three-text';
 import {Line2} from 'three/addons/lines/Line2.js';
 import * as THREE from 'three';
-import {type Camera, type Material, type Mesh, type Object3D, type Vector3} from 'three';
+import {type Camera, type Group, type Material, type Object3D, type Vector3} from 'three';
 import type {GeometryView} from "../../types/view/GeometryView.ts";
+import {config} from "../../types/config.ts";
 
 export class TextService {
-    private backgroundPlanes: Mesh[] = [];
+    private textGroups: Group[] = [];
     private parents: Object3D[] = [];
 
     private varPositionVector: Vector3 = new THREE.Vector3();
 
     public addTextToLine(geometryView: GeometryView, line: Line2, text: string) {
+        // Создаем общую группу для текста и фоновой плашки
+        const textGroup = new THREE.Group();
+
         const textMesh = new Text();
         textMesh.text = text;
         textMesh.fontSize = 1;
@@ -18,7 +22,7 @@ export class TextService {
         textMesh.anchorX = 'center';
         textMesh.anchorY = 'middle';
 
-        textMesh.renderOrder = 999;
+        textMesh.renderOrder = config.rendering.textRenderOrder;
 
         // Создаем фоновую плашку
         const backgroundMesh = new THREE.Mesh(
@@ -26,11 +30,12 @@ export class TextService {
             new THREE.MeshBasicMaterial({
                 color: 0x000000,
                 depthTest: false,
-                opacity: 0
             })
         );
-        backgroundMesh.position.copy(line.getWorldPosition(this.varPositionVector));
-        backgroundMesh.renderOrder = 998; // Рисуем фон перед текстом
+        backgroundMesh.renderOrder = config.rendering.textRenderOrder;
+
+        textGroup.add(backgroundMesh);
+        textGroup.add(textMesh);
 
         textMesh.sync(() => {
             // Устанавливаем depthTest на материале после его создания
@@ -44,35 +49,34 @@ export class TextService {
             if (bounds) {
                 const width = bounds.max.x - bounds.min.x;
                 const height = bounds.max.y - bounds.min.y;
-                const padding = 0.1; // Добавляем небольшой отступ
-                backgroundMesh.scale.set(width + padding, height + padding, 1);
+                const paddingPrc = 1.2; // Отступы вокруг текста
+                backgroundMesh.scale.set(width * paddingPrc, height * paddingPrc, 1);
             }
         });
 
         // Текст становится дочерним элементом фоновой плашки
-        backgroundMesh.add(textMesh);
-        geometryView.addToConstantGroup(backgroundMesh);
+        geometryView.addToConstantGroup(textGroup);
 
-        this.backgroundPlanes.push(backgroundMesh);
+        this.textGroups.push(textGroup);
         this.parents.push(line);
     }
 
     public onCameraChange(camera: Camera) {
-        for (const backgroundMesh of this.backgroundPlanes) {
+        for (const backgroundMesh of this.textGroups) {
             backgroundMesh.quaternion.copy(camera.quaternion);
         }
     }
 
-    public beforeRender(camera: Camera) {
-        for (let i = 0; i < this.backgroundPlanes.length; ++i) {
-            const backgroundMesh = this.backgroundPlanes[i]!;
+    public beforeRender() {
+        for (let i = 0; i < this.textGroups.length; ++i) {
+            const textGroup = this.textGroups[i]!;
             const parent = this.parents[i]!;
 
-            this.updatePosition(backgroundMesh, parent);
+            this.updatePosition(textGroup, parent);
         }
     }
 
-    private updatePosition(backgroundMesh: Mesh, parent: Object3D) {
-        backgroundMesh.position.copy(parent.getWorldPosition(this.varPositionVector));
+    private updatePosition(textGroup: Group, parent: Object3D) {
+        textGroup.position.copy(parent.getWorldPosition(this.varPositionVector));
     }
 }

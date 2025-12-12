@@ -62,11 +62,8 @@ export class DrawService {
         }
     }
 
-    private drawNodes(geometry: Geometry, geometryView: GeometryView) {
-        for (const node of geometry.nodes) {
-            const position = new THREE.Vector3(node.x, node.y, node.z);
-            this.mainLineService.drawSquare(geometryView, position, {color: 0xFF0000, size: 3});
-        }
+    beforeRender() {
+        this.textService.beforeRender(/*this.sceneService.mainCamera*/);
     }
 
     private addUiToScene(geometry: Geometry, geometryView: GeometryView) {
@@ -76,8 +73,11 @@ export class DrawService {
             child => child.layers.enable(config.coordinateAxes.connectedAxesLayer));
     }
 
-    beforeRender() {
-        this.textService.beforeRender(this.sceneService.mainCamera);
+    private drawNodes(geometry: Geometry, geometryView: GeometryView) {
+        for (const node of geometry.nodes) {
+            const position = new THREE.Vector3(node.x, node.y, node.z);
+            this.mainLineService.drawNode(geometryView, position, {color: 0x000000, size: 3});
+        }
     }
 }
 

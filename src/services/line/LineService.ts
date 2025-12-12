@@ -10,8 +10,8 @@ export class LineService {
     private coneRadius: number = 0.15;
     private coneHeight: number = 0.5;
 
-    public drawSquare(geometryView: GeometryView, position: Vector3,
-                      options: { color?: THREE.Color | number, size: number }
+    public drawNode(geometryView: GeometryView, position: Vector3,
+                    options: { color?: THREE.Color | number, size: number }
     ) {
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute([
@@ -27,13 +27,12 @@ export class LineService {
             // --- ВАЖНЫЕ НАСТРОЙКИ ДЛЯ ОТРИСОВКИ ПОВЕРХ ВСЕГО ---
             depthTest: false,   // Отключаем проверку глубины (рисуем сквозь стены)
             depthWrite: false,  // Не записываем этот объект в буфер глубины (хорошая практика для UI)
-            transparent: true   // Обычно нужно, если используются текстуры, но для цветного квадрата тоже не помешает
         });
 
         const dot = new THREE.Points(geometry, material);
 
         // чтобы объект рисовался после всех остальных объектов сцены
-        dot.renderOrder = 999;
+        dot.renderOrder = config.rendering.nodeRenderOrder;
 
         // Если не отключить frustumCulled, объект может исчезнуть,
         // когда его "настоящий" центр выйдет за пределы камеры,
