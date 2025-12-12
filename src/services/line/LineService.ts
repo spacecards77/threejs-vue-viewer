@@ -10,9 +10,6 @@ export class LineService {
     private coneRadius: number = 0.15;
     private coneHeight: number = 0.5;
 
-    constructor() {
-    }
-
     public drawSquare(geometryView: GeometryView, position: Vector3,
                       options: { color?: THREE.Color | number, size: number }
     ) {
@@ -52,22 +49,32 @@ export class LineService {
                         linewidth?: number,
                         parent?: Object3D
                     }
-    ) {
+    ): Line2 {
         //OPTIMIZE: Reuse materials and geometries where possible
         const material = new LineMaterial({
             linewidth: options?.linewidth || 2,
             vertexColors: true,
         });
-        // avoid mutating caller-provided vectors by cloning before subtracting
-        const p1 = start.clone().sub(geometryView.position);
-        const p2 = end.clone().sub(geometryView.position);
+
+        // Calculate the midpoint in world coordinates
+        const lineCenter = new Vector3().addVectors(start, end).multiplyScalar(0.5);
+
+        // Position the line at the midpoint (relative to geometryView)
+        const lineCenterRelative = lineCenter.clone().sub(geometryView.position);
+
+        // Make geometry points relative to the line's position (which is at the midpoint)
+        const p1 = start.clone().sub(lineCenter);
+        const p2 = end.clone().sub(lineCenter);
+
         const geometry = new LineGeometry().setFromPoints([p1, p2]);
         // LineGeometry.setColors expects an array of RGB float values per vertex
         // (r, g, b) for each vertex. For two vertices we must supply 6 floats.
         const col = new Color(options?.color ?? 0x0000ff);
         geometry.setColors([col.r, col.g, col.b, col.r, col.g, col.b]);
         const line = new Line2(geometry, material);
-        const lineCenter = new Vector3().addVectors(start, end).multiplyScalar(0.5);
+
+        // Set the line's position to the midpoint
+        line.position.copy(lineCenterRelative);
 
         if (config.debugMode)
             line.name = 'Line' + '(' + lineCenter.x.toFixed(2) + ','
@@ -79,6 +86,8 @@ export class LineService {
         } else {
             geometryView.add(line);
         }
+
+        return line;
     }
 
     drawArrow(geometryView: GeometryView, start: Vector3, end: Vector3,
