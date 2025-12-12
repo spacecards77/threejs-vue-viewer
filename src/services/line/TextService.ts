@@ -1,7 +1,7 @@
 import {Text} from 'troika-three-text';
 import {Line2} from 'three/addons/lines/Line2.js';
 import * as THREE from 'three';
-import {type Camera, type Group, type Material, type Object3D, type Vector3} from 'three';
+import {type Camera, type Group, type Object3D, type Vector3} from 'three';
 import type {GeometryView} from "../../types/view/GeometryView.ts";
 import {config} from "../../types/config.ts";
 
@@ -22,27 +22,29 @@ export class TextService {
         textMesh.anchorX = 'center';
         textMesh.anchorY = 'middle';
 
-        textMesh.renderOrder = config.rendering.textRenderOrder;
+        //textMesh.renderOrder = config.rendering.textRenderOrder;
+        textMesh.layers.set(config.rendering.textLayer);
 
         // Создаем фоновую плашку
         const backgroundMesh = new THREE.Mesh(
             new THREE.PlaneGeometry(1, 1),
             new THREE.MeshBasicMaterial({
                 color: 0x000000,
-                depthTest: false,
+                //depthTest: false,
             })
         );
-        backgroundMesh.renderOrder = config.rendering.textRenderOrder;
+        //backgroundMesh.renderOrder = config.rendering.textRenderOrder;
+        backgroundMesh.layers.set(config.rendering.textLayer);
 
         textGroup.add(backgroundMesh);
         textGroup.add(textMesh);
 
         textMesh.sync(() => {
             // Устанавливаем depthTest на материале после его создания
-            if (textMesh.material) {
+            /*if (textMesh.material) {
                 const material = textMesh.material as Material;
                 material.depthTest = false;
-            }
+            }*/
 
             // Обновляем размер фоновой плашки в соответствии с размером текста
             const bounds = textMesh.geometry.boundingBox;

@@ -36,7 +36,7 @@ export class SceneService {
         this.mainOrthographicCamera = this.createOrthographicCamera();
 
         this.separateAxesCamera = this.createOrthographicCamera();
-        this.separateAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
+        this.separateAxesCamera.layers.set(config.rendering.separateAxesLayer);
 
         this.drawService = new DrawService(this);
         this.prepareMainCamera();
@@ -62,15 +62,12 @@ export class SceneService {
     }
 
     private createMainScene(): THREE.Scene {
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x000000);
-
         /*if (config.debugMode) {
             const axesHelper = new THREE.AxesHelper(5);
             scene.add(axesHelper);
         }*/
 
-        return scene;
+        return new THREE.Scene();
     }
     private createPerspectiveCamera(): PerspectiveCamera {
         const aspect = this.width / this.height;

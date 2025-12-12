@@ -49,6 +49,10 @@ export class RenderService {
             this.renderer.clearDepth();
 
             this.renderSeparateAxes();
+
+            this.renderer.clearDepth();
+
+            this.renderText();
         };
 
         animate();
@@ -63,6 +67,16 @@ export class RenderService {
         this.renderer.render(this.sceneService.mainScene, this.sceneService.mainCamera);
     }
 
+    private renderText() {
+        this.renderer.setViewport(0, 0, this.sceneService.width, this.sceneService.height);
+        this.renderer.setScissorTest(false);
+
+        this.sceneService.mainCamera.layers.set(config.rendering.textLayer);
+
+        this.renderer.render(this.sceneService.mainScene, this.sceneService.mainCamera);
+
+    }
+
     private renderSeparateAxes() {
         this.setSeparateAxesCameraViewOffset();
 
@@ -72,7 +86,7 @@ export class RenderService {
         this.renderer.setScissor(widgetMargin, widgetMargin, widgetSize, widgetSize);
         this.renderer.setScissorTest(true);
 
-        this.sceneService.separateAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
+        this.sceneService.separateAxesCamera.layers.set(config.rendering.separateAxesLayer);
 
         this.renderer.render(this.sceneService.mainScene, this.sceneService.separateAxesCamera);
     }

@@ -8,13 +8,12 @@ export const config = {
         lineWidth: 3,
         widgetSize: 200,
         widgetMargin: 0,
-        connectedAxesLayer: 1,
     },
 
     rendering: {
-        nodeRenderOrder: 800,
-        textRenderOrder: 900,
-        textLayer: 1,
+        nodeRenderOrder: 900,
+        separateAxesLayer: 1,
+        textLayer: 2,
     },
 
     standardMaxRadius: 20

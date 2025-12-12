@@ -70,7 +70,7 @@ export class DrawService {
         const maxRadius = geometry.getMaxRadius();
         this.mainLineService.drawCoordinateAxes(geometryView, maxRadius / config.standardMaxRadius);
         geometryView.coordinateBegin.traverse(
-            child => child.layers.enable(config.coordinateAxes.connectedAxesLayer));
+            child => child.layers.enable(config.rendering.separateAxesLayer));
     }
 
     private drawNodes(geometry: Geometry, geometryView: GeometryView) {
