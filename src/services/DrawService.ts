@@ -26,6 +26,10 @@ export class DrawService {
         return geometryView;
     }
 
+    public onCameraChange() {
+        this.textService.onCameraChange(this.sceneService.mainCamera);
+    }
+
     private addGeometryToScene(geometry: Geometry) {
         const center = geometry.getCenter();
 
@@ -54,7 +58,7 @@ export class DrawService {
             const p1 = new THREE.Vector3(n1.x, n1.y, n1.z);
             const p2 = new THREE.Vector3(n2.x, n2.y, n2.z);
             const line = this.mainLineService.drawLine(geometryView, p1, p2, {color: 0x99CCCC});
-            this.textService.addTextToLine(line, member.id.toString());
+            this.textService.addTextToLine(geometryView, line, member.id.toString());
         }
     }
 

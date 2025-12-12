@@ -1,15 +1,23 @@
 import {Text} from 'troika-three-text';
 import {Line2} from 'three/addons/lines/Line2.js';
-import type {Camera, Material} from 'three';
 import * as THREE from 'three';
+import {type Camera, type Material, type Mesh, type Object3D, PerspectiveCamera, type Vector3} from 'three';
+import type {GeometryView} from "../../types/view/GeometryView.ts";
 
 export class TextService {
-    private backgroundPlanes: THREE.Mesh[] = [];
+    private backgroundPlanes: Mesh[] = [];
+    private parents: Object3D[] = [];
 
-    public addTextToLine(line: Line2, text: string) {
+    private readonly initialScale = 1; // Базовый размер
+    private readonly factor = 0.1; // Коэффициент подбора размера
+    private varDistanceVector: Vector3 = new THREE.Vector3();
+    private varScaleVector: Vector3 = new THREE.Vector3();
+    private varPositionVector: Vector3 = new THREE.Vector3();
+
+    public addTextToLine(geometryView: GeometryView, line: Line2, text: string) {
         const textMesh = new Text();
         textMesh.text = text;
-        textMesh.fontSize = 0.5;
+        textMesh.fontSize = 1;
         textMesh.color = 0xffffff;
         textMesh.anchorX = 'center';
         textMesh.anchorY = 'middle';
@@ -25,6 +33,7 @@ export class TextService {
                 opacity: 0
             })
         );
+        backgroundMesh.position.copy(line.getWorldPosition(this.varPositionVector));
         backgroundMesh.renderOrder = 998; // Рисуем фон перед текстом
 
         textMesh.sync(() => {
@@ -46,26 +55,37 @@ export class TextService {
 
         // Текст становится дочерним элементом фоновой плашки
         backgroundMesh.add(textMesh);
-        line.add(backgroundMesh);
+        geometryView.addToConstantGroup(backgroundMesh);
+
         this.backgroundPlanes.push(backgroundMesh);
+        this.parents.push(line);
+    }
+
+    public onCameraChange(camera: Camera) {
+        for (const backgroundMesh of this.backgroundPlanes) {
+            backgroundMesh.quaternion.copy(camera.quaternion);
+        }
     }
 
     public beforeRender(camera: Camera) {
-        for (const backgroundMesh of this.backgroundPlanes) {
-            // Компенсируем родительское вращение, чтобы фон всегда смотрел в камеру
-            if (backgroundMesh.parent) {
-                // Получаем мировой quaternion родителя
-                const parentWorldQuaternion = backgroundMesh.parent.getWorldQuaternion(backgroundMesh.quaternion.clone());
-                // Инвертируем его
-                const inverseParentQuaternion = parentWorldQuaternion.invert();
-                // Применяем инвертированный quaternion родителя, а затем quaternion камеры
-                backgroundMesh.quaternion.copy(inverseParentQuaternion).multiply(camera.quaternion);
-            } else {
-                // Если нет родителя, просто копируем quaternion камеры
-                backgroundMesh.quaternion.copy(camera.quaternion);
-            }
+        for (let i = 0; i < this.backgroundPlanes.length; ++i) {
+            const backgroundMesh = this.backgroundPlanes[i]!;
+            const parent = this.parents[i]!;
 
-            // Текст будет вращаться вместе с фоном, так как является дочерним элементом
+            this.updatePosition(backgroundMesh, parent);
+            this.compensateDistance(backgroundMesh, camera);
+        }
+    }
+
+    private updatePosition(backgroundMesh: Mesh, parent: Object3D) {
+        backgroundMesh.position.copy(parent.getWorldPosition(this.varPositionVector));
+    }
+
+    private compensateDistance(backgroundMesh: Mesh, camera: Camera) {
+        if (camera instanceof PerspectiveCamera) {
+            /*const distance = camera.position.distanceTo(this.varPositionVector);
+            const scale = distance /  * this.factor;
+            backgroundMesh.scale.setScalar(scale);*/
         }
     }
 }

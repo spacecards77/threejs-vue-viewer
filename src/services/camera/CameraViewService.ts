@@ -66,6 +66,8 @@ export class CameraViewService {
 
         this.sceneService.modelNavigationService.mouseXMoveRotationAxis = cameraViewParameter.up.clone();
         this.sceneService.modelNavigationService.mouseYMoveRotationAxis = cameraViewParameter.backward.clone().cross(cameraViewParameter!.up).normalize();
+
+        this.sceneService.drawService.onCameraChange();
     }
 
     private calculateRequiredDistance(maxRadius: number) {

@@ -34,24 +34,24 @@ export class SceneService {
 
         this.mainPerspectiveCamera = this.createPerspectiveCamera();
         this.mainOrthographicCamera = this.createOrthographicCamera();
-        this.prepareMainCamera();
 
         this.separateAxesCamera = this.createOrthographicCamera();
         this.separateAxesCamera.layers.set(config.coordinateAxes.connectedAxesLayer);
 
         this.drawService = new DrawService(this);
+        this.prepareMainCamera();
 
         this.geometryView = new GeometryView(this.mainScene, new Vector3())
         this.rendererService = new RenderService(this);
         this.modelNavigationService = new ModelNavigationService(this);
         this.cameraViewService = new CameraViewService(this);
 
-
         this.setupEventListeners();
     }
 
     private prepareMainCamera() {
         this.mainCamera = this.isMainPerspective ? this.mainPerspectiveCamera : this.mainOrthographicCamera;
+        this.drawService.onCameraChange();
     }
 
     private updateSizeForContainer(): void {

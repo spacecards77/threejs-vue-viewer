@@ -116,4 +116,8 @@ export class GeometryView {
             this.scene.remove(this.parentGroup);
         }
     }
+
+    addToConstantGroup(object: Object3D) {
+        this.scene.add(object); //TODO: сделать группу для константных объектов и очистку этой группы
+    }
 }
