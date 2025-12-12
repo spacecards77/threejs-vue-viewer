@@ -54,10 +54,6 @@ export class SceneService {
         this.mainCamera = this.isMainPerspective ? this.mainPerspectiveCamera : this.mainOrthographicCamera;
     }
 
-    public setGeometryView(geometryView: GeometryView) {
-        this.geometryView = geometryView;
-    }
-
     private updateSizeForContainer(): void {
         AssertUtils.isNotNull(this.canvasElement, 'SceneService: canvasElement is null.');
 
@@ -138,11 +134,10 @@ export class SceneService {
     dispose() {
         this.modelNavigationService.dispose();
         this.rendererService.dispose();
-        this.drawService.dispose();
 
         // Очистка геометрии если она есть
         if (this.geometryView) {
-            this.geometryView.dispose();
+            this.geometryView.dispose(true);
         }
     }
 

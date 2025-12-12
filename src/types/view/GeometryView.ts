@@ -74,7 +74,7 @@ export class GeometryView {
         return this.parentGroup.getWorldPosition(target);
     }
 
-    dispose() {
+    dispose(doRemoveFromScene: boolean) {
         // Рекурсивно очищаем все дочерние объекты
         this.parentGroup.traverse((object) => {
             if (object !== this.parentGroup && object !== this.coordinateBegin) {
@@ -95,6 +95,25 @@ export class GeometryView {
             }
         });
 
-        this.scene.remove(this.parentGroup);
+        // Удаляем все дочерние объекты из coordinateBegin
+        while (this.coordinateBegin.children.length > 0) {
+            const child = this.coordinateBegin.children[0];
+            if (child) {
+                this.coordinateBegin.remove(child);
+            }
+        }
+
+        // Удаляем все дочерние объекты из parentGroup, но НЕ удаляем this.coordinateBegin
+        const parentChildren = [...this.parentGroup.children];
+        for (const child of parentChildren) {
+            if (child && child !== this.coordinateBegin) {
+                this.parentGroup.remove(child);
+            }
+        }
+
+        if (doRemoveFromScene) {
+            this.parentGroup.remove(this.coordinateBegin)
+            this.scene.remove(this.parentGroup);
+        }
     }
 }

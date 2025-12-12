@@ -7,27 +7,20 @@ import {config} from "../../types/config.ts";
 import {GeometryView} from "../../types/view/GeometryView.ts";
 
 export class LineService {
-    private lines: Line2[] = [];
-    private dots: THREE.Points[] = [];
-    private cones: THREE.Mesh[] = [];
-    private readonly scene: THREE.Scene;
-    public readonly geometryView: GeometryView;
     private coneRadius: number = 0.15;
     private coneHeight: number = 0.5;
 
-    constructor(scene: THREE.Scene, center: Vector3) {
-        this.scene = scene;
-        this.geometryView = new GeometryView(this.scene, center);
+    constructor() {
     }
 
-    public drawSquare(position: Vector3,
+    public drawSquare(geometryView: GeometryView, position: Vector3,
                       options: { color?: THREE.Color | number, size: number }
     ) {
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute([
-                position.x - this.geometryView.position.x,
-                position.y - this.geometryView.position.y,
-                position.z - this.geometryView.position.z],
+                position.x - geometryView.position.x,
+                position.y - geometryView.position.y,
+                position.z - geometryView.position.z],
             3));
 
         const material = new THREE.PointsMaterial({
@@ -50,11 +43,10 @@ export class LineService {
         // хотя сам квадрат все еще должен быть виден.
         dot.frustumCulled = false;
 
-        this.geometryView.add(dot);
-        this.dots.push(dot);
+        geometryView.add(dot);
     }
 
-    public drawLine(start: Vector3, end: Vector3,
+    public drawLine(geometryView: GeometryView, start: Vector3, end: Vector3,
                     options?: {
                         color?: THREE.Color | number,
                         linewidth?: number,
@@ -67,8 +59,8 @@ export class LineService {
             vertexColors: true,
         });
         // avoid mutating caller-provided vectors by cloning before subtracting
-        const p1 = start.clone().sub(this.geometryView.position);
-        const p2 = end.clone().sub(this.geometryView.position);
+        const p1 = start.clone().sub(geometryView.position);
+        const p2 = end.clone().sub(geometryView.position);
         const geometry = new LineGeometry().setFromPoints([p1, p2]);
         // LineGeometry.setColors expects an array of RGB float values per vertex
         // (r, g, b) for each vertex. For two vertices we must supply 6 floats.
@@ -85,12 +77,11 @@ export class LineService {
         if (options?.parent) {
             options.parent.add(line);
         } else {
-            this.geometryView.add(line);
+            geometryView.add(line);
         }
-        this.lines.push(line);
     }
 
-    drawArrow(start: Vector3, end: Vector3,
+    drawArrow(geometryView: GeometryView, start: Vector3, end: Vector3,
               options?: {
                   color?: THREE.Color | number,
                   linewidth?: number,
@@ -106,7 +97,7 @@ export class LineService {
         // Calculate the new end point for the line (shortened by cone height)
         //const lineEnd = start.clone().add(direction.clone().multiplyScalar(totalLength - this.coneHeight));
         // Draw the line from start to lineEnd
-        this.drawLine(start, end, options);
+        this.drawLine(geometryView, start, end, options);
 
         const kSizeFactor = options?.kSizeFactor ?? 1;
         const coneRadius = this.coneRadius * kSizeFactor;
@@ -118,7 +109,7 @@ export class LineService {
 
         // Position the cone at the end point
         // Cone's default orientation is pointing up (Y+), so we need to align it with direction
-        const conePosition = end.clone().sub(this.geometryView.position);
+        const conePosition = end.clone().sub(geometryView.position);
         cone.position.copy(conePosition);
 
         // Align cone with the direction vector
@@ -135,64 +126,20 @@ export class LineService {
         if (options?.parent) {
             options.parent.add(cone);
         } else {
-            this.geometryView.add(cone);
+            geometryView.add(cone);
         }
-
-        this.cones.push(cone);
     }
 
-    public drawCoordinateAxes(kSizeFactor: number) {
-        const start = new Vector3().sub(this.geometryView.coordinateBegin.position);
-        const coordinateBegin = this.geometryView.coordinateBegin;
+    public drawCoordinateAxes(geometryView: GeometryView, kSizeFactor: number) {
+        const start = new Vector3().sub(geometryView.coordinateBegin.position);
+        const coordinateBegin = geometryView.coordinateBegin;
         let linewidth = config.coordinateAxes.lineWidth;
         let length = config.coordinateAxes.length * kSizeFactor;
-        this.drawArrow(start, new Vector3(start.x + length, start.y, start.z),
+        this.drawArrow(geometryView, start, new Vector3(start.x + length, start.y, start.z),
             {color: 0xBA0000, linewidth: linewidth, parent: coordinateBegin, kSizeFactor: kSizeFactor}); // X - Red
-        this.drawArrow(start, new Vector3(start.x, start.y + length, start.z),
+        this.drawArrow(geometryView, start, new Vector3(start.x, start.y + length, start.z),
             {color: 0x00C500, linewidth: linewidth, parent: coordinateBegin, kSizeFactor: kSizeFactor}); // Y - Green
-        this.drawArrow(start, new Vector3(start.x, start.y, start.z + length),
+        this.drawArrow(geometryView, start, new Vector3(start.x, start.y, start.z + length),
             {color: 0x00FFFF, linewidth: linewidth, parent: coordinateBegin, kSizeFactor: kSizeFactor}); // Z - Blue
-    }
-
-    clearAllLines(): void {
-        for (const line of this.lines) {
-            line.geometry.dispose();
-            if (Array.isArray(line.material)) {
-                line.material.forEach(m => m.dispose());
-            } else {
-                line.material.dispose();
-            }
-            line.parent?.remove(line);
-        }
-        this.lines = [];
-
-        for (const cone of this.cones) {
-            cone.geometry.dispose();
-            if (Array.isArray(cone.material)) {
-                cone.material.forEach(m => m.dispose());
-            } else {
-                cone.material.dispose();
-            }
-            cone.parent?.remove(cone);
-        }
-        this.cones = [];
-
-        for (const dot of this.dots) {
-            dot.geometry.dispose();
-            if (Array.isArray(dot.material)) {
-                dot.material.forEach(m => m.dispose());
-            } else {
-                dot.material.dispose();
-            }
-            dot.parent?.remove(dot);
-        }
-        this.dots = [];
-    }
-
-    public dispose(): void {
-        this.geometryView.dispose();
-        this.lines = [];
-        this.dots = [];
-        this.cones = [];
     }
 }

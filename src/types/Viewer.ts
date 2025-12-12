@@ -34,13 +34,11 @@ export class Viewer {
 
     public setMainCamera(isMainPerspective: boolean): void {
         this.sceneService.setMainCamera(isMainPerspective);
-        /*if (this.construction)
-            this.processConstruction(this.construction);*/
     }
 
     public setCameraView(cameraView: CameraView): void {
         if (this.construction) {
-            this.construction.geometry.GeometryView!.restoreStarting();
+            this.sceneService.geometryView.restoreStarting();
             this.cameraViewService.setCameraView(cameraView, this.construction.geometry);
         }
     }
@@ -54,11 +52,11 @@ export class Viewer {
     };
 
     private processConstruction(construction: Construction) {
+        this.sceneService.geometryView.dispose(false);
+
         this.construction = construction;
 
-        this.drawService.addConstructionToScene(this.construction);
-
-        this.sceneService.setGeometryView(construction.geometry.GeometryView!);
+        this.sceneService.geometryView = this.drawService.addConstructionToScene(this.construction);
 
         this.setCameraView(CameraView.ReverseYDirection);
     }

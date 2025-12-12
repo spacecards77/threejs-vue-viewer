@@ -1,35 +1,33 @@
 import * as THREE from 'three';
-import {Vector3} from 'three';
 import {Construction, Geometry} from '../types/model';
 import {config} from "../types/config.ts";
 import type {SceneService} from "./SceneService.ts";
 import {MainLineService} from "./line/MainLineService.ts";
+import {GeometryView} from "../types/view/GeometryView.ts";
 
 export class DrawService {
     private readonly sceneService: SceneService;
-    private mainLineService!: MainLineService;
+    private readonly mainLineService!: MainLineService;
 
     constructor(sceneService: SceneService) {
         this.sceneService = sceneService;
+        this.mainLineService = new MainLineService();
     }
 
     //ARCHITECTURE: Разделить на DrawGeometry и DrawUi
-    addConstructionToScene(construction: Construction) {
-        const center = construction.geometry.getCenter();
+    addConstructionToScene(construction: Construction): GeometryView {
+        const geometryView = this.addGeometryToScene(construction.geometry);
 
-        this.createServices(center);
+        this.addUiToScene(construction.geometry, geometryView);
 
-        this.addGeometryToScene(construction.geometry);
-
-        this.addUiToScene(construction.geometry.getMaxRadius());
+        return geometryView;
     }
 
     private addGeometryToScene(geometry: Geometry) {
         const center = geometry.getCenter();
 
-        this.mainLineService.clearAllLines();
-
-        this.mainLineService.geometryView.position.copy(center);
+        const geometryView = new GeometryView(this.sceneService.mainScene, center);
+        geometryView.position.copy(center);
 
         for (const member of geometry.members) {
             const n1 = geometry.idToNode.get(member.node1Id);
@@ -41,41 +39,27 @@ export class DrawService {
             }
             const p1 = new THREE.Vector3(n1.x, n1.y, n1.z);
             const p2 = new THREE.Vector3(n2.x, n2.y, n2.z);
-            this.mainLineService.drawLine(p1, p2, {color: 0x99CCCC});
+            this.mainLineService.drawLine(geometryView, p1, p2, {color: 0x99CCCC});
         }
 
         for (const node of geometry.nodes) {
             const position = new THREE.Vector3(node.x, node.y, node.z);
-            this.mainLineService.drawSquare(position, {color: 0xFF0000, size: 3});
+            this.mainLineService.drawSquare(geometryView, position, {color: 0xFF0000, size: 3});
         }
 
         if (config.debugMode)
             console.log(`Model displayed: ${geometry.members.length} members drawn`);
 
-        geometry.GeometryView = this.mainLineService.geometryView;
-        geometry.GeometryView.storeStarting();
+        geometryView.storeStarting();
+
+        return geometryView;
     }
 
-    private addUiToScene(maxRadius: number) {
-        this.mainLineService.drawCoordinateAxes(maxRadius / config.standardMaxRadius);
-        this.mainLineService.geometryView.coordinateBegin.traverse(
+    private addUiToScene(geometry: Geometry, geometryView: GeometryView) {
+        const maxRadius = geometry.getMaxRadius();
+        this.mainLineService.drawCoordinateAxes(geometryView, maxRadius / config.standardMaxRadius);
+        geometryView.coordinateBegin.traverse(
             child => child.layers.enable(config.coordinateAxes.connectedAxesLayer));
-
-
     }
-
-    public dispose() {
-        if (this.mainLineService) {
-            this.mainLineService.dispose();
-        }
-    }
-
-    private createServices(center: Vector3) {
-        if (this.mainLineService) {
-            this.mainLineService.dispose();
-        }
-        this.mainLineService = new MainLineService(this.sceneService.mainScene, center);
-    }
-
 }
 

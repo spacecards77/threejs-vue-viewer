@@ -2,7 +2,6 @@ import {Member} from './Member';
 import {Node} from './Node';
 import type {IGeometry} from './IGeometry';
 import {Vector3} from "three";
-import {type GeometryView} from "../view/GeometryView.ts";
 
 export interface GeometryJSON {
     //ARCHITECTURE: use exact type
@@ -17,7 +16,6 @@ export class Geometry implements IGeometry {
     private readonly center: Vector3;
     private readonly box: Vector3;
     private readonly maxRadius: number;
-    GeometryView: GeometryView | null = null;
 
     constructor(members: Member[], nodes: Node[]) {
         this.members = members;
