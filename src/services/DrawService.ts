@@ -8,8 +8,8 @@ import {TextService} from "./line/TextService.ts";
 
 export class DrawService {
     private readonly sceneService: SceneService;
-    private readonly mainLineService!: MainLineService;
-    private textService: TextService;
+    private readonly mainLineService: MainLineService;
+    private readonly textService: TextService;
 
     constructor(sceneService: SceneService) {
         this.sceneService = sceneService;
@@ -70,6 +70,10 @@ export class DrawService {
         this.mainLineService.drawCoordinateAxes(geometryView, maxRadius / config.standardMaxRadius);
         geometryView.coordinateBegin.traverse(
             child => child.layers.enable(config.coordinateAxes.connectedAxesLayer));
+    }
+
+    beforeRender() {
+        this.textService.beforeRender(this.sceneService.mainCamera);
     }
 }
 

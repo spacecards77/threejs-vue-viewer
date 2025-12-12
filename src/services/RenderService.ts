@@ -39,6 +39,9 @@ export class RenderService {
         const animate = () => {
             this.animationId = requestAnimationFrame(animate);
 
+            // Обновляем ориентацию текста перед рендерингом
+            this.sceneService.drawService.beforeRender();
+
             this.renderer.clear();
 
             this.renderMain();
