@@ -1,17 +1,13 @@
 import {Text} from 'troika-three-text';
 import {Line2} from 'three/addons/lines/Line2.js';
 import * as THREE from 'three';
-import {type Camera, type Material, type Mesh, type Object3D, PerspectiveCamera, type Vector3} from 'three';
+import {type Camera, type Material, type Mesh, type Object3D, type Vector3} from 'three';
 import type {GeometryView} from "../../types/view/GeometryView.ts";
 
 export class TextService {
     private backgroundPlanes: Mesh[] = [];
     private parents: Object3D[] = [];
 
-    private readonly initialScale = 1; // Базовый размер
-    private readonly factor = 0.1; // Коэффициент подбора размера
-    private varDistanceVector: Vector3 = new THREE.Vector3();
-    private varScaleVector: Vector3 = new THREE.Vector3();
     private varPositionVector: Vector3 = new THREE.Vector3();
 
     public addTextToLine(geometryView: GeometryView, line: Line2, text: string) {
@@ -73,19 +69,10 @@ export class TextService {
             const parent = this.parents[i]!;
 
             this.updatePosition(backgroundMesh, parent);
-            this.compensateDistance(backgroundMesh, camera);
         }
     }
 
     private updatePosition(backgroundMesh: Mesh, parent: Object3D) {
         backgroundMesh.position.copy(parent.getWorldPosition(this.varPositionVector));
-    }
-
-    private compensateDistance(backgroundMesh: Mesh, camera: Camera) {
-        if (camera instanceof PerspectiveCamera) {
-            /*const distance = camera.position.distanceTo(this.varPositionVector);
-            const scale = distance /  * this.factor;
-            backgroundMesh.scale.setScalar(scale);*/
-        }
     }
 }
